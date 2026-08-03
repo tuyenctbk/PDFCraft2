@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PDFCraft</string>
+    <string name="tab_merge">結合</string>
+    <string name="tab_split">分割</string>
+    <string name="tab_compress">圧縮</string>
+    <string name="tab_library">ライブラリ</string>
+    <string name="onboarding_skip">スキップ</string>
+    <string name="onboarding_next">次へ</string>
+    <string name="onboarding_get_started">始める</string>
+    <string name="onboarding_title_1">完全オフライン・プライベート</string>
+    <string name="onboarding_desc_1">デバイス上でPDFの結合・分割・圧縮を安全に行えます。</string>
+    <string name="onboarding_title_2">ストレージアクセス</string>
+    <string name="onboarding_desc_2">PDFの読み込みと保存のための権限を付与してください。</string>
+    <string name="onboarding_title_3">高速でオフライン対応</string>
+    <string name="onboarding_desc_3">インターネット不要で高速なPDF処理を実現。</string>
+    <string name="grant_permission">権限を許可</string>
+    <string name="permission_granted">許可済み ✓</string>
+    <string name="action_merge">PDFを結合</string>
+    <string name="action_split">PDFを分割</string>
+    <string name="action_compress">PDFを圧縮</string>
+    <string name="action_save">保存</string>
+    <string name="action_share">共有</string>
+    <string name="action_delete">削除</string>
+    <string name="action_cancel">キャンセル</string>
+    <string name="action_close">閉じる</string>
+    <string name="action_view">表示</string>
+    <string name="action_select_files">ファイルを選択</string>
+    <string name="ad_sponsor">スポンサー</string>
+    <string name="ad_polite_notice">PDFCraftをご利用いただきありがとうございます！</string>
+    <string name="ad_close">広告を閉じる</string>
+</resources>

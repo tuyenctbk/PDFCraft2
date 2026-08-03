@@ -1,0 +1,6 @@
+{
+  "name": "PDFCraft",
+  "description": "Minimalist offline PDF studio to merge, split, reorder, rotate, compress, and extract images from PDF documents on device.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

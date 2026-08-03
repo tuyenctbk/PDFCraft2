@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PDFCraft</string>
+    <string name="tab_merge">Îmbinare</string>
+    <string name="tab_split">Divizare</string>
+    <string name="tab_compress">Comprimare</string>
+    <string name="tab_library">Bibliotecă</string>
+    <string name="onboarding_skip">Sari peste</string>
+    <string name="onboarding_next">Următorul</string>
+    <string name="onboarding_get_started">Începe</string>
+    <string name="onboarding_title_1">100% pe dispozitiv &amp; Privat</string>
+    <string name="onboarding_desc_1">Procesează, unește, divide și comprimă documentele PDF direct pe dispozitiv.</string>
+    <string name="onboarding_title_2">Acces stocare locală</string>
+    <string name="onboarding_desc_2">Acordă permisiuni pentru a importa și salva fișierul PDF.</string>
+    <string name="onboarding_title_3">Performanță rapidă &amp; Offline</string>
+    <string name="onboarding_desc_3">Procesare PDF rapidă fără conexiune la internet.</string>
+    <string name="grant_permission">Acordă permisiunea</string>
+    <string name="permission_granted">Permisiune acordată ✓</string>
+    <string name="action_merge">Îmbinare PDF</string>
+    <string name="action_split">Divizare PDF</string>
+    <string name="action_compress">Comprimare PDF</string>
+    <string name="action_save">Salvează PDF</string>
+    <string name="action_share">Distribuie</string>
+    <string name="action_delete">Șterge</string>
+    <string name="action_cancel">Anulare</string>
+    <string name="action_close">Închide</string>
+    <string name="action_view">Vizualizează</string>
+    <string name="action_select_files">Selectează fișierele</string>
+    <string name="ad_sponsor">Sponsorizat</string>
+    <string name="ad_polite_notice">Mulțumim că folosești PDFCraft!</string>
+    <string name="ad_close">Închide reclama</string>
+</resources>

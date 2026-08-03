@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PDFCraft</string>
+    <string name="tab_merge">合并</string>
+    <string name="tab_split">拆分</string>
+    <string name="tab_compress">压缩</string>
+    <string name="tab_library">库</string>
+    <string name="onboarding_skip">跳过</string>
+    <string name="onboarding_next">下一步</string>
+    <string name="onboarding_get_started">开始使用</string>
+    <string name="onboarding_title_1">100% 本地处理，完全隐私</string>
+    <string name="onboarding_desc_1">在您的设备上直接合并、拆分和压缩 PDF 文档，无需上传云端，保障隐私。</string>
+    <string name="onboarding_title_2">存储权限访问</string>
+    <string name="onboarding_desc_2">授予存储权限，以便 PDFCraft 轻松导入和保存您的 PDF 文件。</string>
+    <string name="onboarding_title_3">高速离线体验</string>
+    <string name="onboarding_desc_3">无需网络连接即可享受极速的 PDF 处理体验。</string>
+    <string name="grant_permission">授予权限</string>
+    <string name="permission_granted">已获得权限 ✓</string>
+    <string name="action_merge">合并 PDF</string>
+    <string name="action_split">拆分 PDF</string>
+    <string name="action_compress">压缩 PDF</string>
+    <string name="action_save">保存 PDF</string>
+    <string name="action_share">分享</string>
+    <string name="action_delete">删除</string>
+    <string name="action_cancel">取消</string>
+    <string name="action_close">关闭</string>
+    <string name="action_view">查看</string>
+    <string name="action_select_files">选择文件</string>
+    <string name="ad_sponsor">赞助广告</string>
+    <string name="ad_polite_notice">感谢使用 PDFCraft！广告支持我们的持续开发。</string>
+    <string name="ad_close">关闭广告</string>
+</resources>

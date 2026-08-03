@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PDFCraft</string>
+    <string name="tab_merge">Gabung</string>
+    <string name="tab_split">Pecah</string>
+    <string name="tab_compress">Kompres</string>
+    <string name="tab_library">Pustaka</string>
+    <string name="onboarding_skip">Lewati</string>
+    <string name="onboarding_next">Lanjut</string>
+    <string name="onboarding_get_started">Mulai</string>
+    <string name="onboarding_title_1">100% di Perangkat &amp; Privasi</string>
+    <string name="onboarding_desc_1">Proses, gabungkan, pecah, dan kompres dokumen PDF Anda langsung di perangkat.</string>
+    <string name="onboarding_title_2">Akses Penyimpanan Lokal</string>
+    <string name="onboarding_desc_2">Berikan izin penyimpanan untuk mengimpor dan menyimpan PDF Anda.</string>
+    <string name="onboarding_title_3">Cepat &amp; Kinerja Offline</string>
+    <string name="onboarding_desc_3">Nikmati pemrosesan PDF cepat tanpa koneksi internet.</string>
+    <string name="grant_permission">Beri Izin</string>
+    <string name="permission_granted">Izin Diberikan ✓</string>
+    <string name="action_merge">Gabungkan PDF</string>
+    <string name="action_split">Pecah PDF</string>
+    <string name="action_compress">Kompres PDF</string>
+    <string name="action_save">Simpan PDF</string>
+    <string name="action_share">Bagikan</string>
+    <string name="action_delete">Hapus</string>
+    <string name="action_cancel">Batal</string>
+    <string name="action_close">Tutup</string>
+    <string name="action_view">Lihat</string>
+    <string name="action_select_files">Pilih Berkas</string>
+    <string name="ad_sponsor">Disponsori</string>
+    <string name="ad_polite_notice">Terima kasih telah menggunakan PDFCraft!</string>
+    <string name="ad_close">Tutup Iklan</string>
+</resources>

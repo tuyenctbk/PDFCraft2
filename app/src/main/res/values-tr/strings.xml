@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PDFCraft</string>
+    <string name="tab_merge">Birleştir</string>
+    <string name="tab_split">Böl</string>
+    <string name="tab_compress">Sıkıştır</string>
+    <string name="tab_library">Kütüphane</string>
+    <string name="onboarding_skip">Atla</string>
+    <string name="onboarding_next">İleri</string>
+    <string name="onboarding_get_started">Başla</string>
+    <string name="onboarding_title_1">%100 Cihazda &amp; Gizli</string>
+    <string name="onboarding_desc_1">PDF belgelerinizi doğrudan cihazınızda işleyin, birleştirin, bölün ve sıkıştırın.</string>
+    <string name="onboarding_title_2">Yerel Depolama Erişimi</string>
+    <string name="onboarding_desc_2">PDF\'leri içe aktarmak ve kaydetmek için depolama izni verin.</string>
+    <string name="onboarding_title_3">Hızlı &amp; Çevrimdışı Performans</string>
+    <string name="onboarding_desc_3">İnternet bağlantısı gerektirmeden hızlı PDF işleme deneyimi.</string>
+    <string name="grant_permission">İzin Ver</string>
+    <string name="permission_granted">İzin Verildi ✓</string>
+    <string name="action_merge">PDF\'leri Birleştir</string>
+    <string name="action_split">PDF Böl</string>
+    <string name="action_compress">PDF Sıkıştır</string>
+    <string name="action_save">PDF Kaydet</string>
+    <string name="action_share">Paylaş</string>
+    <string name="action_delete">Sil</string>
+    <string name="action_cancel">İptal</string>
+    <string name="action_close">Kapat</string>
+    <string name="action_view">Görüntüle</string>
+    <string name="action_select_files">Dosya Seç</string>
+    <string name="ad_sponsor">Sponsorlu</string>
+    <string name="ad_polite_notice">PDFCraft\'ı kullandığınız için teşekkürler!</string>
+    <string name="ad_close">Reklamı Kapat</string>
+</resources>

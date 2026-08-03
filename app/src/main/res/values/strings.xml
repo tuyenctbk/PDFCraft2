@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PDFCraft</string>
+    <string name="tab_merge">Merge</string>
+    <string name="tab_split">Split</string>
+    <string name="tab_compress">Compress</string>
+    <string name="tab_library">Library</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_get_started">Get Started</string>
+    <string name="onboarding_title_1">100% On-Device &amp; Private</string>
+    <string name="onboarding_desc_1">Process, merge, split, and compress your sensitive PDF documents directly on your device. No cloud uploads, complete privacy.</string>
+    <string name="onboarding_title_2">Smart Local Storage Access</string>
+    <string name="onboarding_desc_2">Grant storage permissions so PDFCraft can easily import documents and save your crafted PDFs directly to your Downloads folder.</string>
+    <string name="onboarding_title_3">Fast &amp; Offline Performance</string>
+    <string name="onboarding_desc_3">Experience blazing fast PDF processing without needing an internet connection. Custom compression and page extraction at your fingertips.</string>
+    <string name="grant_permission">Grant Permission</string>
+    <string name="permission_granted">Permission Granted ✓</string>
+
+    <!-- Actions & Common -->
+    <string name="action_merge">Merge PDFs</string>
+    <string name="action_split">Split PDF</string>
+    <string name="action_compress">Compress PDF</string>
+    <string name="action_save">Save PDF</string>
+    <string name="action_share">Share</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_close">Close</string>
+    <string name="action_view">View</string>
+    <string name="action_select_files">Select Files</string>
+
+    <!-- AdMob & Polite Ads -->
+    <string name="ad_sponsor">Sponsored</string>
+    <string name="ad_polite_notice">Thank you for using PDFCraft! Ads support continuous offline tool development.</string>
+    <string name="ad_close">Close Ad</string>
+</resources>

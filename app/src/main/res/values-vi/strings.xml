@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PDFCraft</string>
+    <string name="tab_merge">Gộp</string>
+    <string name="tab_split">Chia</string>
+    <string name="tab_compress">Nén</string>
+    <string name="tab_library">Thư viện</string>
+    <string name="onboarding_skip">Bỏ qua</string>
+    <string name="onboarding_next">Tiếp theo</string>
+    <string name="onboarding_get_started">Bắt đầu</string>
+    <string name="onboarding_title_1">100% trên thiết bị &amp; Riêng tư</string>
+    <string name="onboarding_desc_1">Xử lý, gộp, chia và nén tài liệu PDF trực tiếp trên thiết bị của bạn. Không tải lên đám mây.</string>
+    <string name="onboarding_title_2">Truy cập bộ nhớ cục bộ</string>
+    <string name="onboarding_desc_2">Cấp quyền bộ nhớ để dễ dàng nhập tài liệu và lưu file PDF.</string>
+    <string name="onboarding_title_3">Hiệu suất nhanh &amp; Ngoại tuyến</string>
+    <string name="onboarding_desc_3">Trải nghiệm xử lý PDF siêu tốc mà không cần kết nối internet.</string>
+    <string name="grant_permission">Cấp quyền</string>
+    <string name="permission_granted">Đã cấp quyền ✓</string>
+    <string name="action_merge">Gộp PDF</string>
+    <string name="action_split">Chia PDF</string>
+    <string name="action_compress">Nén PDF</string>
+    <string name="action_save">Lưu PDF</string>
+    <string name="action_share">Chia sẻ</string>
+    <string name="action_delete">Xóa</string>
+    <string name="action_cancel">Hủy</string>
+    <string name="action_close">Đóng</string>
+    <string name="action_view">Xem</string>
+    <string name="action_select_files">Chọn tệp</string>
+    <string name="ad_sponsor">Được tài trợ</string>
+    <string name="ad_polite_notice">Cảm ơn bạn đã sử dụng PDFCraft! Quảng cáo hỗ trợ phát triển ứng dụng.</string>
+    <string name="ad_close">Đóng quảng cáo</string>
+</resources>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PDFCraft</string>
+    <string name="tab_merge">Slå ihop</string>
+    <string name="tab_split">Dela</string>
+    <string name="tab_compress">Komprimera</string>
+    <string name="tab_library">Bibliotek</string>
+    <string name="onboarding_skip">Hoppa över</string>
+    <string name="onboarding_next">Nästa</string>
+    <string name="onboarding_get_started">Kom igång</string>
+    <string name="onboarding_title_1">100% på enheten &amp; Privat</string>
+    <string name="onboarding_desc_1">Bearbeta, slå ihop, dela och komprimera PDF-filer direkt på enheten.</string>
+    <string name="onboarding_title_2">Lokal lagringsåtkomst</string>
+    <string name="onboarding_desc_2">Bevilja lagringsbehörigheter för att importera och spara PDF-filer.</string>
+    <string name="onboarding_title_3">Snabb &amp; Offlineprestanda</string>
+    <string name="onboarding_desc_3">Blixtsnabb PDF-hantering utan internetanslutning.</string>
+    <string name="grant_permission">Bevilja behörighet</string>
+    <string name="permission_granted">Behörighet beviljad ✓</string>
+    <string name="action_merge">Slå ihop PDF-filer</string>
+    <string name="action_split">Dela PDF</string>
+    <string name="action_compress">Komprimera PDF</string>
+    <string name="action_save">Spara PDF</string>
+    <string name="action_share">Dela</string>
+    <string name="action_delete">Radera</string>
+    <string name="action_cancel">Avbryt</string>
+    <string name="action_close">Stäng</string>
+    <string name="action_view">Visa</string>
+    <string name="action_select_files">Välj filer</string>
+    <string name="ad_sponsor">Sponsrad</string>
+    <string name="ad_polite_notice">Tack för att du använder PDFCraft!</string>
+    <string name="ad_close">Stäng annons</string>
+</resources>

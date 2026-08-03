@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PDFCraft</string>
+    <string name="tab_merge">Об\'єднати</string>
+    <string name="tab_split">Розділити</string>
+    <string name="tab_compress">Стиснути</string>
+    <string name="tab_library">Бібліотека</string>
+    <string name="onboarding_skip">Пропустити</string>
+    <string name="onboarding_next">Далі</string>
+    <string name="onboarding_get_started">Почати</string>
+    <string name="onboarding_title_1">100% на пристрої та конфіденційно</string>
+    <string name="onboarding_desc_1">Обробляйте, об\'єднуйте, розділяйте та стискайте PDF безпосередньо на пристрої.</string>
+    <string name="onboarding_title_2">Доступ до локального сховища</string>
+    <string name="onboarding_desc_2">Надайте дозвіл для імпорту та збереження PDF.</string>
+    <string name="onboarding_title_3">Швидко та офлайн</string>
+    <string name="onboarding_desc_3">Блискавична обробка PDF без підключення до інтернету.</string>
+    <string name="grant_permission">Надати дозвіл</string>
+    <string name="permission_granted">Дозвіл надано ✓</string>
+    <string name="action_merge">Об\'єднати PDF</string>
+    <string name="action_split">Розділити PDF</string>
+    <string name="action_compress">Стиснути PDF</string>
+    <string name="action_save">Зберегти PDF</string>
+    <string name="action_share">Поділитися</string>
+    <string name="action_delete">Видалити</string>
+    <string name="action_cancel">Скасувати</string>
+    <string name="action_close">Закрити</string>
+    <string name="action_view">Переглянути</string>
+    <string name="action_select_files">Вибрати файли</string>
+    <string name="ad_sponsor">Спонсор</string>
+    <string name="ad_polite_notice">Дякуємо за використання PDFCraft!</string>
+    <string name="ad_close">Закрити рекламу</string>
+</resources>

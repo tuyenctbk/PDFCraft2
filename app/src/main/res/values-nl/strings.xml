@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PDFCraft</string>
+    <string name="tab_merge">Samenvoegen</string>
+    <string name="tab_split">Splitsen</string>
+    <string name="tab_compress">Comprimeren</string>
+    <string name="tab_library">Bibliotheek</string>
+    <string name="onboarding_skip">Overslaan</string>
+    <string name="onboarding_next">Volgende</string>
+    <string name="onboarding_get_started">Aan de slag</string>
+    <string name="onboarding_title_1">100% op apparaat &amp; Privé</string>
+    <string name="onboarding_desc_1">Verwerk, voeg samen, splits en comprimeer PDF\'s direct op uw apparaat.</string>
+    <string name="onboarding_title_2">Lokale opslagtoegang</string>
+    <string name="onboarding_desc_2">Geef opslagrechten om eenvoudig documenten te importeren en op te slaan.</string>
+    <string name="onboarding_title_3">Snelle &amp; Offline prestaties</string>
+    <string name="onboarding_desc_3">Ervaar bliksemsnelle PDF-verwerking zonder internet.</string>
+    <string name="grant_permission">Toestemming verlenen</string>
+    <string name="permission_granted">Toestemming verleend ✓</string>
+    <string name="action_merge">PDF\'s samenvoegen</string>
+    <string name="action_split">PDF splitsen</string>
+    <string name="action_compress">PDF comprimeren</string>
+    <string name="action_save">PDF opslaan</string>
+    <string name="action_share">Delen</string>
+    <string name="action_delete">Verwijderen</string>
+    <string name="action_cancel">Annuleren</string>
+    <string name="action_close">Sluiten</string>
+    <string name="action_view">Bekijken</string>
+    <string name="action_select_files">Bestanden selecteren</string>
+    <string name="ad_sponsor">Gesponsord</string>
+    <string name="ad_polite_notice">Bedankt voor het gebruik van PDFCraft!</string>
+    <string name="ad_close">Advertentie sluiten</string>
+</resources>

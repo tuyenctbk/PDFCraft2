@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PDFCraft</string>
+    <string name="tab_merge">Unisci</string>
+    <string name="tab_split">Dividi</string>
+    <string name="tab_compress">Comprimi</string>
+    <string name="tab_library">Libreria</string>
+    <string name="onboarding_skip">Salta</string>
+    <string name="onboarding_next">Avanti</string>
+    <string name="onboarding_get_started">Inizia</string>
+    <string name="onboarding_title_1">100% sul dispositivo e privato</string>
+    <string name="onboarding_desc_1">Elabora, unisci, dividi e comprimi i PDF direttamente sul tuo dispositivo.</string>
+    <string name="onboarding_title_2">Accesso allo storage locale</string>
+    <string name="onboarding_desc_2">Concedi i permessi per importare e salvare i PDF.</string>
+    <string name="onboarding_title_3">Veloce e offline</string>
+    <string name="onboarding_desc_3">Elaborazione PDF fulminea senza connessione internet.</string>
+    <string name="grant_permission">Concedi permesso</string>
+    <string name="permission_granted">Permesso concesso ✓</string>
+    <string name="action_merge">Unisci PDF</string>
+    <string name="action_split">Dividi PDF</string>
+    <string name="action_compress">Comprimi PDF</string>
+    <string name="action_save">Salva PDF</string>
+    <string name="action_share">Condividi</string>
+    <string name="action_delete">Elimina</string>
+    <string name="action_cancel">Annulla</string>
+    <string name="action_close">Chiudi</string>
+    <string name="action_view">Visualizza</string>
+    <string name="action_select_files">Seleziona file</string>
+    <string name="ad_sponsor">Sponsorizzato</string>
+    <string name="ad_polite_notice">Grazie per aver usato PDFCraft!</string>
+    <string name="ad_close">Chiudi annuncio</string>
+</resources>

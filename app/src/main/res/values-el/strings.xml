@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PDFCraft</string>
+    <string name="tab_merge">Σحγχώνευση</string>
+    <string name="tab_split">Διαχωρισμός</string>
+    <string name="tab_compress">Συμπίεση</string>
+    <string name="tab_library">Βιβλιοθήκη</string>
+    <string name="onboarding_skip">Παράλειψη</string>
+    <string name="onboarding_next">Επόμενο</string>
+    <string name="onboarding_get_started">Ξεκινήστε</string>
+    <string name="onboarding_title_1">100% στη συσκευή &amp; Ιδιωτικά</string>
+    <string name="onboarding_desc_1">Επεξεργαστείτε, συγχωνεύστε, διαχωρίστε και συμπιέστε PDF απευθείας στη συσκευή σας.</string>
+    <string name="onboarding_title_2">Πρόσβαση τοπικού αποθηκευτικού χώρου</string>
+    <string name="onboarding_desc_2">Παρέχετε δικαιώματα για εύκολη εισαγωγή και αποθήκευση PDF.</string>
+    <string name="onboarding_title_3">Γρήγορη &amp; Offline απόδοση</string>
+    <string name="onboarding_desc_3">Αστραπιαία επεξεργασία PDF χωρίς σύνδεση στο internet.</string>
+    <string name="grant_permission">Παραχώρηση άδειας</string>
+    <string name="permission_granted">Η άδεια δόθηκε ✓</string>
+    <string name="action_merge">Συγχώνευση PDF</string>
+    <string name="action_split">Διαχωρισμός PDF</string>
+    <string name="action_compress">Συμπίεση PDF</string>
+    <string name="action_save">Αποθήκευση PDF</string>
+    <string name="action_share">Коινή χρήση</string>
+    <string name="action_delete">Διαγραφή</string>
+    <string name="action_cancel">Άκυρο</string>
+    <string name="action_close">Кλείσιμο</string>
+    <string name="action_view">Проβολή</string>
+    <string name="action_select_files">Επιλογή αρχείων</string>
+    <string name="ad_sponsor">Хορηγία</string>
+    <string name="ad_polite_notice">Еυχαριστούμε που χρησιμοποιείτε το PDFCraft!</string>
+    <string name="ad_close">Кλείσιμο διαφήμισης</string>
+</resources>

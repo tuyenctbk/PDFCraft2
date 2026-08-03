@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PDFCraft</string>
+    <string name="tab_merge">जोड़ें</string>
+    <string name="tab_split">विभाजित करें</string>
+    <string name="tab_compress">संकुचित करें</string>
+    <string name="tab_library">लाइब्रेरी</string>
+    <string name="onboarding_skip">छोड़ें</string>
+    <string name="onboarding_next">अगला</string>
+    <string name="onboarding_get_started">शुरू करें</string>
+    <string name="onboarding_title_1">100% डिवाइस पर और निजी</string>
+    <string name="onboarding_desc_1">अपने डिवाइस पर सीधे पीडीएफ दस्तावेज़ों को प्रोसेस, मर्ज और संकुचित करें।</string>
+    <string name="onboarding_title_2">स्थानीय स्टोरेज एक्सेस</string>
+    <string name="onboarding_desc_2">दस्तावेजों को आसानी से आयात और सहेजने के लिए अनुमति दें।</string>
+    <string name="onboarding_title_3">तेज़ और ऑफ़लाइन प्रदर्शन</string>
+    <string name="onboarding_desc_3">इंटरनेट के बिना बिजली की तेज़ गति से पीडीएफ प्रोसेसिंग।</string>
+    <string name="grant_permission">अनुमति दें</string>
+    <string name="permission_granted">अनुमति दी गई ✓</string>
+    <string name="action_merge">पीडीएफ मर्ज करें</string>
+    <string name="action_split">पीडीएफ विभाजित करें</string>
+    <string name="action_compress">पीडीएफ संकुचित करें</string>
+    <string name="action_save">पीडीएफ सहेजें</string>
+    <string name="action_share">साझा करें</string>
+    <string name="action_delete">हटाएं</string>
+    <string name="action_cancel">रद्द करें</string>
+    <string name="action_close">बंद करें</string>
+    <string name="action_view">देखें</string>
+    <string name="action_select_files">फ़ाइलें चुनें</string>
+    <string name="ad_sponsor">प्रायोजित</string>
+    <string name="ad_polite_notice">PDFCraft का उपयोग करने के लिए धन्यवाद!</string>
+    <string name="ad_close">विज्ञापन बंद करें</string>
+</resources>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PDFCraft</string>
+    <string name="tab_merge">병합</string>
+    <string name="tab_split">분할</string>
+    <string name="tab_compress">압축</string>
+    <string name="tab_library">라이브러리</string>
+    <string name="onboarding_skip">건너뛰기</string>
+    <string name="onboarding_next">다음</string>
+    <string name="onboarding_get_started">시작하기</string>
+    <string name="onboarding_title_1">100% 기기 내 처리 및 보안</string>
+    <string name="onboarding_desc_1">기기에서 직접 PDF를 병합, 분할, 압축하세요. 클라우드 업로드 없음.</string>
+    <string name="onboarding_title_2">스토리지 접근 권한</string>
+    <string name="onboarding_desc_2">PDF 파일 불러오기 및 저장을 위해 권한을 허용해주세요.</string>
+    <string name="onboarding_title_3">빠르고 오프라인 지원</string>
+    <string name="onboarding_desc_3">인터넷 없이도 초고속 PDF 처리.</string>
+    <string name="grant_permission">권한 허용</string>
+    <string name="permission_granted">권한 허용됨 ✓</string>
+    <string name="action_merge">PDF 병합</string>
+    <string name="action_split">PDF 분할</string>
+    <string name="action_compress">PDF 압축</string>
+    <string name="action_save">PDF 저장</string>
+    <string name="action_share">공유</string>
+    <string name="action_delete">삭제</string>
+    <string name="action_cancel">취소</string>
+    <string name="action_close">닫기</string>
+    <string name="action_view">보기</string>
+    <string name="action_select_files">파일 선택</string>
+    <string name="ad_sponsor">스폰서</string>
+    <string name="ad_polite_notice">PDFCraft를 이용해주셔서 감사합니다!</string>
+    <string name="ad_close">광고 닫기</string>
+</resources>

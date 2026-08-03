@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PDFCraft</string>
+    <string name="tab_merge">دمج</string>
+    <string name="tab_split">تقسيم</string>
+    <string name="tab_compress">ضغط</string>
+    <string name="tab_library">المكتبة</string>
+    <string name="onboarding_skip">تخطي</string>
+    <string name="onboarding_next">التالي</string>
+    <string name="onboarding_get_started">ابدأ الان</string>
+    <string name="onboarding_title_1">100% على الجهاز وخاص</string>
+    <string name="onboarding_desc_1">قم بمعالجة ودمج وتقسيم وضغط ملفات PDF مباشرة على جهازك.</string>
+    <string name="onboarding_title_2">الوصول للتخزين المحلي</string>
+    <string name="onboarding_desc_2">امنح أذونات التخزين لاستيراد وحفظ المستندات بسهولة.</string>
+    <string name="onboarding_title_3">أداء سريع بدون إنترنت</string>
+    <string name="onboarding_desc_3">معالجة فائقة السرعة لملفات PDF دون الحاجة لإنترنت.</string>
+    <string name="grant_permission">منح الإذن</string>
+    <string name="permission_granted">تم منح الإذن ✓</string>
+    <string name="action_merge">دمج ملفات PDF</string>
+    <string name="action_split">تقسيم ملف PDF</string>
+    <string name="action_compress">ضغط ملف PDF</string>
+    <string name="action_save">حفظ PDF</string>
+    <string name="action_share">مشاركة</string>
+    <string name="action_delete">حذف</string>
+    <string name="action_cancel">إلغاء</string>
+    <string name="action_close">إغلاق</string>
+    <string name="action_view">عرض</string>
+    <string name="action_select_files">تحديد الملفات</string>
+    <string name="ad_sponsor">إعلان</string>
+    <string name="ad_polite_notice">شكراً لاستخدامك PDFCraft!</string>
+    <string name="ad_close">إغلاق الإعلان</string>
+</resources>

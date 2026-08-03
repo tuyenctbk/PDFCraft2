@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PDFCraft</string>
+    <string name="tab_merge">Mesclar</string>
+    <string name="tab_split">Dividir</string>
+    <string name="tab_compress">Comprimir</string>
+    <string name="tab_library">Biblioteca</string>
+    <string name="onboarding_skip">Pular</string>
+    <string name="onboarding_next">Próximo</string>
+    <string name="onboarding_get_started">Começar</string>
+    <string name="onboarding_title_1">100% no dispositivo e privado</string>
+    <string name="onboarding_desc_1">Processe, mescle, divida e comprima PDFs diretamente no seu aparelho.</string>
+    <string name="onboarding_title_2">Acesso ao armazenamento local</string>
+    <string name="onboarding_desc_2">Conceda permissões para importar e salvar seus arquivos.</string>
+    <string name="onboarding_title_3">Rápido e offline</string>
+    <string name="onboarding_desc_3">Processamento rápido sem precisar de internet.</string>
+    <string name="grant_permission">Conceder permissão</string>
+    <string name="permission_granted">Permissão concedida ✓</string>
+    <string name="action_merge">Mesclar PDFs</string>
+    <string name="action_split">Dividir PDF</string>
+    <string name="action_compress">Comprimir PDF</string>
+    <string name="action_save">Salvar PDF</string>
+    <string name="action_share">Compartilhar</string>
+    <string name="action_delete">Excluir</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_close">Fechar</string>
+    <string name="action_view">Ver</string>
+    <string name="action_select_files">Selecionar arquivos</string>
+    <string name="ad_sponsor">Patrocinado</string>
+    <string name="ad_polite_notice">Obrigado por usar o PDFCraft!</string>
+    <string name="ad_close">Fechar anúncio</string>
+</resources>

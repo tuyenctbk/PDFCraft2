@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PDFCraft</string>
+    <string name="tab_merge">รวมไฟล์</string>
+    <string name="tab_split">แยกไฟล์</string>
+    <string name="tab_compress">ย่อขนาด</string>
+    <string name="tab_library">คลังไฟล์</string>
+    <string name="onboarding_skip">ข้าม</string>
+    <string name="onboarding_next">ถัดไป</string>
+    <string name="onboarding_get_started">เริ่มต้นใช้งาน</string>
+    <string name="onboarding_title_1">ประมวลผลบนอุปกรณ์ 100% ปลอดภัย</string>
+    <string name="onboarding_desc_1">รวม แยก และย่อขนาดไฟล์ PDF ได้โดยตรงบนเครื่องของคุณโดยไม่ต้องอัปโหลดขึ้นคลาวด์</string>
+    <string name="onboarding_title_2">สิทธิ์เข้าถึงพื้นที่จัดเก็บ</string>
+    <string name="onboarding_desc_2">อนุญาตสิทธิ์เข้าถึงพื้นที่จัดเก็บเพื่อให้ PDFCraft สามารถนำเข้าและบันทึกไฟล์ PDF ได้อย่างง่ายดาย</string>
+    <string name="onboarding_title_3">รวดเร็ว &amp; ออฟไลน์</string>
+    <string name="onboarding_desc_3">ประมวลผล PDF ได้อย่างรวดเร็วโดยไม่ต้องใช้อินเทอร์เน็ต</string>
+    <string name="grant_permission">อนุญาตสิทธิ์</string>
+    <string name="permission_granted">ได้รับสิทธิ์แล้ว ✓</string>
+    <string name="action_merge">รวมไฟล์ PDF</string>
+    <string name="action_split">แยกไฟล์ PDF</string>
+    <string name="action_compress">ย่อขนาด PDF</string>
+    <string name="action_save">บันทึก PDF</string>
+    <string name="action_share">แชร์</string>
+    <string name="action_delete">ลบ</string>
+    <string name="action_cancel">ยกเลิก</string>
+    <string name="action_close">ปิด</string>
+    <string name="action_view">ดู</string>
+    <string name="action_select_files">เลือกไฟล์</string>
+    <string name="ad_sponsor">ผู้สนับสนุน</string>
+    <string name="ad_polite_notice">ขอบคุณที่ใช้ PDFCraft! โฆษณาช่วยสนับสนุนการพัฒนาแอปอย่างต่อเนื่อง</string>
+    <string name="ad_close">ปิดโฆษณา</string>
+</resources>
