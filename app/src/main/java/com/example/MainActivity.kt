@@ -9,6 +9,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -29,12 +30,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ui.MainViewModel
 import com.example.ui.components.AppBottomNav
+import com.example.ui.components.AppNavigationRail
 import com.example.ui.components.AppTopBar
 import com.example.ui.components.InfoPrivacyDialog
 import com.example.ui.components.PdfMetadataDialog
@@ -114,29 +117,12 @@ fun PDFCraftApp(
         return
     }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            AppTopBar(
-                onOpenInfoDialog = { showInfoDialog = true },
-                onOpenSettingsDialog = { showSettingsDialog = true }
-            )
-        },
-        bottomBar = {
-            Column {
-                PoliteAdBanner()
-                AppBottomNav(
-                    selectedTab = currentTab,
-                    onTabSelected = { viewModel.selectTab(it) }
-                )
-            }
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { innerPadding ->
+    val isWideScreen = LocalConfiguration.current.screenWidthDp >= 600
+
+    @Composable
+    fun MainContentArea(modifier: Modifier = Modifier) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+            modifier = modifier.fillMaxSize()
         ) {
             Crossfade(
                 targetState = currentTab,
@@ -150,45 +136,91 @@ fun PDFCraftApp(
                 }
             }
         }
+    }
 
-        // Dialogs
-        if (showSettingsDialog) {
-            SettingsDialog(
-                viewModel = viewModel,
-                onDismiss = { showSettingsDialog = false }
+    if (isWideScreen) {
+        Row(modifier = Modifier.fillMaxSize()) {
+            AppNavigationRail(
+                selectedTab = currentTab,
+                onTabSelected = { viewModel.selectTab(it) }
             )
+            Scaffold(
+                modifier = Modifier.weight(1f),
+                topBar = {
+                    AppTopBar(
+                        onOpenInfoDialog = { showInfoDialog = true },
+                        onOpenSettingsDialog = { showSettingsDialog = true }
+                    )
+                },
+                bottomBar = {
+                    PoliteAdBanner()
+                },
+                snackbarHost = { SnackbarHost(snackbarHostState) }
+            ) { innerPadding ->
+                MainContentArea(modifier = Modifier.padding(innerPadding))
+            }
         }
-
-        if (showInfoDialog) {
-            InfoPrivacyDialog(
-                onDismiss = { showInfoDialog = false },
-                onReplayOnboarding = { viewModel.resetOnboardingForTesting() }
-            )
-        }
-
-        if (showPoliteAdDialog) {
-            PoliteAdDialog(
-                onDismiss = { viewModel.dismissPoliteAdDialog() }
-            )
-        }
-
-        activeViewerFile?.let { file ->
-            PdfViewerDialog(
-                file = file,
-                onDismiss = { viewModel.closeViewer() }
-            )
-        }
-
-        if (selectedMetadata != null || isLoadingMetadata) {
-            PdfMetadataDialog(
-                metadata = selectedMetadata,
-                isLoading = isLoadingMetadata,
-                onDismiss = { viewModel.clearSelectedMetadata() },
-                onOpenInViewer = { filePath ->
-                    viewModel.openInViewer(filePath)
+    } else {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
+                AppTopBar(
+                    onOpenInfoDialog = { showInfoDialog = true },
+                    onOpenSettingsDialog = { showSettingsDialog = true }
+                )
+            },
+            bottomBar = {
+                Column {
+                    PoliteAdBanner()
+                    AppBottomNav(
+                        selectedTab = currentTab,
+                        onTabSelected = { viewModel.selectTab(it) }
+                    )
                 }
-            )
+            },
+            snackbarHost = { SnackbarHost(snackbarHostState) }
+        ) { innerPadding ->
+            MainContentArea(modifier = Modifier.padding(innerPadding))
         }
+    }
+
+    // Dialogs
+    if (showSettingsDialog) {
+        SettingsDialog(
+            viewModel = viewModel,
+            onDismiss = { showSettingsDialog = false }
+        )
+    }
+
+    if (showInfoDialog) {
+        InfoPrivacyDialog(
+            onDismiss = { showInfoDialog = false },
+            onReplayOnboarding = { viewModel.resetOnboardingForTesting() }
+        )
+    }
+
+    if (showPoliteAdDialog) {
+        PoliteAdDialog(
+            onDismiss = { viewModel.dismissPoliteAdDialog() }
+        )
+    }
+
+    activeViewerFile?.let { file ->
+        PdfViewerDialog(
+            file = file,
+            onDismiss = { viewModel.closeViewer() }
+        )
+    }
+
+    if (selectedMetadata != null || isLoadingMetadata) {
+        PdfMetadataDialog(
+            metadata = selectedMetadata,
+            isLoading = isLoadingMetadata,
+            onDismiss = { viewModel.clearSelectedMetadata() },
+            onOpenInViewer = { filePath ->
+                viewModel.openInViewer(filePath)
+            }
+        )
     }
 }
 
