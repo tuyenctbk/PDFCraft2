@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - PDFCraft Pro</title>
+    <style>
+        :root {
+            --primary: #6750A4;
+            --on-primary: #FFFFFF;
+            --background: #FEF7FF;
+            --on-background: #1D1B20;
+            --surface: #F7F2FA;
+            --on-surface: #1D1B20;
+            --on-surface-variant: #49454F;
+            --outline: #79747E;
+            --card-border: #E8E0EB;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary: #D0BCFF;
+                --on-primary: #381E72;
+                --background: #141218;
+                --on-background: #E6E1E5;
+                --surface: #211F26;
+                --on-surface: #E6E1E5;
+                --on-surface-variant: #CAC4D0;
+                --outline: #938F99;
+                --card-border: #36343B;
+            }
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background);
+            color: var(--on-background);
+            line-height: 1.6;
+            margin: 0;
+            padding: 24px 16px;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 28px;
+            margin: 0 0 8px 0;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--on-surface-variant);
+            font-size: 14px;
+            margin: 0;
+        }
+
+        h2 {
+            color: var(--primary);
+            font-size: 20px;
+            margin-top: 32px;
+            margin-bottom: 12px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        p {
+            margin-top: 0;
+            margin-bottom: 16px;
+            color: var(--on-surface-variant);
+            font-size: 15px;
+        }
+
+        ul {
+            margin-top: 0;
+            margin-bottom: 16px;
+            padding-left: 20px;
+            color: var(--on-surface-variant);
+            font-size: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .highlight-card {
+            background-color: var(--surface);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .highlight-card h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: var(--primary);
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .highlight-card p:last-child {
+            margin-bottom: 0;
+        }
+
+        footer {
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid var(--card-border);
+            text-align: center;
+            font-size: 13px;
+            color: var(--on-surface-variant);
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: var(--primary);
+            color: var(--on-primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="badge">100% Private &amp; Local</div>
+            <h1>Privacy Policy</h1>
+            <p class="subtitle">Effective Date: August 4, 2026 • PDFCraft Pro</p>
+        </header>
+
+        <section>
+            <div class="highlight-card">
+                <h3>Our Core Privacy Pledge</h3>
+                <p><strong>PDFCraft Pro is designed with complete user privacy in mind.</strong> All document processing operations (including Merging, Splitting, Compression, Metadata editing, Encryption, Watermarking, Signing, and Rotating) are performed 100% locally on your Android device. We do not operate any backend servers, nor do we collect, store, or transmit your documents or personal information.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2>1. Information We Do Not Collect</h2>
+            <p>Because PDFCraft Pro operates entirely offline and on-device, we do not collect any personal data or documents. Specifically, this means:</p>
+            <ul>
+                <li><strong>No Document Data:</strong> Your PDF files are never uploaded, sent, or processed on any remote server.</li>
+                <li><strong>No Personal Identifiers:</strong> We do not collect names, email addresses, phone numbers, or physical locations.</li>
+                <li><strong>No Account Required:</strong> You do not need to register or create an account to use any of our features.</li>
+                <li><strong>No Usage Tracking:</strong> We do not track individual user behavior or compile personalized telemetry logs.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>2. Device Permissions and Usage</h2>
+            <p>To provide local PDF utility services, the application requires specific system access, managed via safe standard runtime request flows:</p>
+            <ul>
+                <li><strong>Storage Access (Media/Documents Picker):</strong> Used solely to allow you to select source PDF documents from your device and to save the processed results back to your device's storage.</li>
+                <li><strong>Notification Permissions:</strong> Used purely to notify you of successful long-running local operations (e.g., merging multiple heavy PDFs) and saving of output files.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>3. Third-Party Services</h2>
+            <p>We do not integrate third-party trackers, analytics suites, or ad-networks that harvest user data. All processing is powered entirely by open-source libraries (such as Apache PDFBox) working locally within the secure sandbox of the Android OS.</p>
+        </section>
+
+        <section>
+            <h2>4. Compliance (GDPR &amp; CCPA)</h2>
+            <p>We are fully compliant with major global privacy laws, including the European Union General Data Protection Regulation (GDPR) and the California Consumer Privacy Act (CCPA). Because we do not collect, process, or sell any personal data, your privacy rights are automatically and inherently protected when using PDFCraft Pro.</p>
+        </section>
+
+        <section>
+            <h2>5. Changes to This Policy</h2>
+            <p>We may update our Privacy Policy from time to time. Since we do not collect email addresses or push notifications for marketing, any updates will be made available directly inside this page in subsequent application versions.</p>
+        </section>
+
+        <section>
+            <h2>6. Contact Us</h2>
+            <p>If you have any questions or concerns regarding this offline privacy stance, feel free to contact us through our app store platform listing or email our support address.</p>
+        </section>
+
+        <footer>
+            <p>PDFCraft Pro — On-Device Document Utilities</p>
+            <p>&copy; 2026 PDFCraft. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>
