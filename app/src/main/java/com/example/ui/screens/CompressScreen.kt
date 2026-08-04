@@ -12,6 +12,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -69,6 +71,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.data.pdf.PdfEngine
 import com.example.ui.MainViewModel
+import com.example.ui.components.PdfDocumentPreviewCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,23 +91,31 @@ fun CompressScreen(
     var selectedImageFormat by remember { mutableStateOf("PNG") }
 
     val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         uri?.let { viewModel.loadPdfForCompress(it) }
     }
 
-    Column(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Document Header Bar
-        Surface(
-            color = MaterialTheme.colorScheme.surface,
-            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-            modifier = Modifier.fillMaxWidth()
+        val isWide = maxWidth > 600.dp
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .widthIn(max = 840.dp)
+                .align(Alignment.TopCenter)
         ) {
-            Column(modifier = Modifier.padding(14.dp)) {
+            // Document Header Bar
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -126,7 +137,7 @@ fun CompressScreen(
                     }
 
                     Button(
-                        onClick = { filePickerLauncher.launch("application/pdf") },
+                        onClick = { filePickerLauncher.launch(arrayOf("application/pdf", "image/*", "text/plain", "*/*")) },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary
@@ -266,7 +277,7 @@ fun CompressScreen(
                         Spacer(modifier = Modifier.height(24.dp))
 
                         Button(
-                            onClick = { filePickerLauncher.launch("application/pdf") },
+                            onClick = { filePickerLauncher.launch(arrayOf("application/pdf", "image/*", "text/plain", "*/*")) },
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary),
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.fillMaxWidth().height(48.dp).testTag("compress_empty_import_button")
@@ -285,6 +296,14 @@ fun CompressScreen(
                     modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 14.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
+                    item {
+                        PdfDocumentPreviewCard(
+                            file = sourceFile,
+                            uri = sourceUri,
+                            title = "Input Document Preview"
+                        )
+                    }
+
                     item {
                         Text(
                             text = "Choose Compression Level",
@@ -552,4 +571,5 @@ fun CompressScreen(
             }
         }
     }
+}
 }

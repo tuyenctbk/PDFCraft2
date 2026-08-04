@@ -11,6 +11,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -42,6 +44,7 @@ import androidx.compose.material.icons.filled.Merge
 import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Visibility
 import com.example.ui.components.PdfBoxPreviewDialog
+import com.example.ui.components.PdfDocumentPreviewCard
 import com.example.ui.components.RecentFilesSection
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.Button
@@ -120,19 +123,27 @@ fun MergeScreen(
         }
     }
 
-    Column(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Top Switcher: PDFBox Direct Document Merger vs Page Studio
-        Surface(
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 2.dp,
-            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-            modifier = Modifier.fillMaxWidth()
+        val isWide = maxWidth > 600.dp
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .widthIn(max = 840.dp)
+                .align(Alignment.TopCenter)
         ) {
-            Column(modifier = Modifier.padding(top = 12.dp, start = 14.dp, end = 14.dp, bottom = 4.dp)) {
+            // Top Switcher: PDFBox Direct Document Merger vs Page Studio
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 2.dp,
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(top = 12.dp, start = 14.dp, end = 14.dp, bottom = 4.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -336,7 +347,7 @@ fun MergeScreen(
                                 Spacer(modifier = Modifier.height(24.dp))
 
                                 Button(
-                                    onClick = { pdfBoxFilePickerLauncher.launch(arrayOf("application/pdf")) },
+                                    onClick = { pdfBoxFilePickerLauncher.launch(arrayOf("*/*")) },
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = MaterialTheme.colorScheme.primary,
                                         contentColor = MaterialTheme.colorScheme.onPrimary
@@ -352,7 +363,7 @@ fun MergeScreen(
                                         contentDescription = null
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Select Multiple PDF Files", fontWeight = FontWeight.Bold)
+                                    Text("Select Files (PDF, Image, Text)", fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -400,6 +411,16 @@ fun MergeScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.weight(1f)
                         ) {
+                            if (pdfDocuments.isNotEmpty()) {
+                                item {
+                                    PdfDocumentPreviewCard(
+                                        uri = pdfDocuments.first().uri,
+                                        title = "First Document Preview (${pdfDocuments.first().title})"
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                }
+                            }
+
                             itemsIndexed(pdfDocuments, key = { _, doc -> doc.id }) { index, doc ->
                                 Card(
                                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -636,7 +657,7 @@ fun MergeScreen(
                                 Spacer(modifier = Modifier.height(24.dp))
 
                                 Button(
-                                    onClick = { studioFilePickerLauncher.launch(arrayOf("application/pdf", "image/*")) },
+                                    onClick = { studioFilePickerLauncher.launch(arrayOf("*/*")) },
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = MaterialTheme.colorScheme.primary,
                                         contentColor = MaterialTheme.colorScheme.onPrimary
@@ -652,7 +673,7 @@ fun MergeScreen(
                                         contentDescription = null
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Import PDF or Images", fontWeight = FontWeight.Bold)
+                                    Text("Import PDF, Images, or Text", fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -851,6 +872,7 @@ fun MergeScreen(
             }
         }
     }
+}
 
     if (previewUri != null) {
         PdfBoxPreviewDialog(

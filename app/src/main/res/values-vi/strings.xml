@@ -26,6 +26,38 @@
     <string name="action_close">Đóng</string>
     <string name="action_view">Xem</string>
     <string name="action_select_files">Chọn tệp</string>
+
+    <!-- Tools & Features -->
+    <string name="tool_rotate_title">Xoay trang</string>
+    <string name="tool_rotate_desc">Xoay hướng trang theo 90°, 180° hoặc 270°</string>
+    <string name="tool_merge_title">Gộp PDF</string>
+    <string name="tool_merge_desc">Kết hợp nhiều tệp PDF thành một tệp duy nhất</string>
+    <string name="tool_split_title">Tách PDF</string>
+    <string name="tool_split_desc">Trích xuất trang hoặc chia tài liệu thành nhiều phần</string>
+    <string name="tool_compress_title">Nén PDF</string>
+    <string name="tool_compress_desc">Giảm dung lượng tệp mà vẫn giữ nguyên chất lượng</string>
+    <string name="tool_encrypt_title">Mã hóa PDF</string>
+    <string name="tool_encrypt_desc">Bảo vệ PDF nhạy cảm bằng mật khẩu an toàn</string>
+    <string name="tool_watermark_title">Tạo Watermark</string>
+    <string name="tool_watermark_desc">Chèn chìm văn bản bảo vệ trên tất cả các trang</string>
+    <string name="tool_sign_title">Ký PDF</string>
+    <string name="tool_sign_desc">Thêm khối chữ ký số chuyên nghiệp</string>
+    <string name="tool_metadata_title">Sửa Metadata</string>
+    <string name="tool_metadata_desc">Cập nhật tiêu đề, tác giả, chủ đề và từ khóa</string>
+
+    <!-- Rotate Screen -->
+    <string name="rotate_screen_title">Xoay trang PDF</string>
+    <string name="rotate_screen_subtitle">Xoay hướng trang theo 90°, 180° hoặc 270°</string>
+    <string name="rotate_select_pdf_title">Chọn PDF để xoay trang</string>
+    <string name="rotate_select_pdf_desc">Chọn tài liệu để xoay từng trang hoặc tất cả các trang.</string>
+    <string name="rotate_choose_file">Chọn tệp PDF</string>
+    <string name="rotate_selected_count">Xoay các trang đã chọn (%1$d/%2$d)</string>
+    <string name="rotate_select_all">Chọn tất cả</string>
+    <string name="rotate_clear_selection">Bỏ chọn</string>
+    <string name="rotate_reset_rotations">Đặt lại xoay</string>
+    <string name="rotate_output_name_label">Tên tệp PDF đầu ra</string>
+    <string name="rotate_save_button">Lưu PDF đã xoay vào thiết bị</string>
+
     <string name="ad_sponsor">Được tài trợ</string>
     <string name="ad_polite_notice">Cảm ơn bạn đã sử dụng PDFCraft! Quảng cáo hỗ trợ phát triển ứng dụng.</string>
     <string name="ad_close">Đóng quảng cáo</string>

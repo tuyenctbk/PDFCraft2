@@ -17,6 +17,7 @@ import com.example.data.pdf.PdfMetadata
 import com.example.data.pdf.PdfPageSourceItem
 import com.example.data.remote.FirebaseConfigManager
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -184,8 +185,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _currentTab = MutableStateFlow(0)
     val currentTab: StateFlow<Int> = _currentTab.asStateFlow()
 
+    private val _activeTool = MutableStateFlow<PdfOperationType?>(null)
+    val activeTool: StateFlow<PdfOperationType?> = _activeTool.asStateFlow()
+
+    fun setActiveTool(tool: PdfOperationType?) {
+        _activeTool.value = tool
+    }
+
     fun selectTab(index: Int) {
         _currentTab.value = index
+        _activeTool.value = null
     }
 
     // Common Processing State
@@ -264,7 +273,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                             newThumbnails[itemId] = bmp
                         }
                     } else {
-                        val file = PdfEngine.getLocalFileFromUri(getApplication(), uri)
+                        val file = PdfEngine.convertAnyFileToPdf(getApplication(), uri)
                         val pfd = android.os.ParcelFileDescriptor.open(file, android.os.ParcelFileDescriptor.MODE_READ_ONLY)
                         val renderer = android.graphics.pdf.PdfRenderer(pfd)
                         val pageCount = renderer.pageCount
@@ -420,7 +429,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val newDocs = mutableListOf<PdfDocumentInfo>()
                 for (uri in uris) {
-                    val file = PdfEngine.getLocalFileFromUri(getApplication(), uri)
+                    val file = PdfEngine.convertAnyFileToPdf(getApplication(), uri)
                     var pageCount = 1
                     try {
                         val pfd = android.os.ParcelFileDescriptor.open(file, android.os.ParcelFileDescriptor.MODE_READ_ONLY)
@@ -438,12 +447,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                             sizeFormatted = PdfEngine.formatFileSize(file.length()),
                             sizeBytes = file.length(),
                             pageCount = pageCount,
-                            uri = uri
+                            uri = Uri.fromFile(file)
                         )
                     )
                 }
                 _selectedPdfDocuments.value = _selectedPdfDocuments.value + newDocs
-                _userMessage.value = "Added ${newDocs.size} PDF document(s) for PDFBox merge"
+                _userMessage.value = "Added ${newDocs.size} document(s) for PDFBox merge"
             } catch (e: Exception) {
                 _userMessage.value = "Error reading files: ${e.localizedMessage}"
             } finally {
@@ -536,7 +545,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             _isProcessing.value = true
             _processingMessage.value = "Reading document pages..."
             try {
-                val file = PdfEngine.getLocalFileFromUri(getApplication(), uri)
+                val file = PdfEngine.convertAnyFileToPdf(getApplication(), uri)
                 _splitSourceUri.value = uri
                 _splitSourceFile.value = file
 
@@ -589,6 +598,41 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun selectEvenSplitPages() {
         _splitSelectedPages.value = (0 until _splitTotalPages.value).filter { it % 2 != 0 }.toSet() // 0-indexed even pages (2, 4, 6...)
+    }
+
+    fun selectPageRange(rangeStr: String) {
+        val total = _splitTotalPages.value
+        if (total <= 0 || rangeStr.isBlank()) return
+
+        val selected = mutableSetOf<Int>()
+        val parts = rangeStr.split(",")
+        for (part in parts) {
+            val trimmed = part.trim()
+            if (trimmed.contains("-")) {
+                val rangeParts = trimmed.split("-")
+                if (rangeParts.size == 2) {
+                    val start = rangeParts[0].trim().toIntOrNull()
+                    val end = rangeParts[1].trim().toIntOrNull()
+                    if (start != null && end != null && start <= end) {
+                        for (p in start..end) {
+                            val idx = p - 1
+                            if (idx in 0 until total) {
+                                selected.add(idx)
+                            }
+                        }
+                    }
+                }
+            } else {
+                val p = trimmed.toIntOrNull()
+                if (p != null) {
+                    val idx = p - 1
+                    if (idx in 0 until total) {
+                        selected.add(idx)
+                    }
+                }
+            }
+        }
+        _splitSelectedPages.value = selected
     }
 
     fun executeSplit() {
@@ -666,7 +710,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             _isProcessing.value = true
             _processingMessage.value = "Analyzing document structure..."
             try {
-                val file = PdfEngine.getLocalFileFromUri(getApplication(), uri)
+                val file = PdfEngine.convertAnyFileToPdf(getApplication(), uri)
                 _compressSourceUri.value = uri
                 _compressSourceFile.value = file
 
@@ -818,4 +862,602 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun closeViewer() {
         _activeViewerFile.value = null
     }
+
+    // --- ENCRYPT TAB STATE ---
+    private val _encryptSourceUri = MutableStateFlow<Uri?>(null)
+    val encryptSourceUri: StateFlow<Uri?> = _encryptSourceUri.asStateFlow()
+
+    private val _encryptSourceFile = MutableStateFlow<File?>(null)
+    val encryptSourceFile: StateFlow<File?> = _encryptSourceFile.asStateFlow()
+
+    private val _encryptPageCount = MutableStateFlow(0)
+    val encryptPageCount: StateFlow<Int> = _encryptPageCount.asStateFlow()
+
+    private val _encryptUserPassword = MutableStateFlow("")
+    val encryptUserPassword: StateFlow<String> = _encryptUserPassword.asStateFlow()
+
+    private val _encryptOwnerPassword = MutableStateFlow("")
+    val encryptOwnerPassword: StateFlow<String> = _encryptOwnerPassword.asStateFlow()
+
+    private val _encryptOutputName = MutableStateFlow("PDFCraft_Secure.pdf")
+    val encryptOutputName: StateFlow<String> = _encryptOutputName.asStateFlow()
+
+    fun setEncryptUserPassword(pw: String) {
+        _encryptUserPassword.value = pw
+    }
+
+    fun setEncryptOwnerPassword(pw: String) {
+        _encryptOwnerPassword.value = pw
+    }
+
+    fun setEncryptOutputName(name: String) {
+        _encryptOutputName.value = name
+    }
+
+    fun loadPdfForEncrypt(uri: Uri) {
+        viewModelScope.launch {
+            _isProcessing.value = true
+            _processingMessage.value = "Loading PDF for encryption..."
+            try {
+                val file = PdfEngine.convertAnyFileToPdf(getApplication(), uri)
+                _encryptSourceUri.value = uri
+                _encryptSourceFile.value = file
+
+                val pfd = android.os.ParcelFileDescriptor.open(file, android.os.ParcelFileDescriptor.MODE_READ_ONLY)
+                val renderer = android.graphics.pdf.PdfRenderer(pfd)
+                _encryptPageCount.value = renderer.pageCount
+                recordRecentFileAccess(file, renderer.pageCount)
+                renderer.close()
+                pfd.close()
+
+                _encryptOutputName.value = "Secure_${file.name}"
+            } catch (e: Exception) {
+                _userMessage.value = "Could not load PDF: ${e.localizedMessage}"
+            } finally {
+                _isProcessing.value = false
+            }
+        }
+    }
+
+    fun executeEncrypt() {
+        val uri = _encryptSourceUri.value ?: run {
+            _userMessage.value = "Please select a PDF file to encrypt"
+            return
+        }
+        val file = _encryptSourceFile.value ?: return
+        val userPw = _encryptUserPassword.value
+        if (userPw.isBlank()) {
+            _userMessage.value = "Please enter an open password"
+            return
+        }
+        val ownerPw = _encryptOwnerPassword.value.takeIf { it.isNotBlank() } ?: (userPw + "_owner")
+
+        viewModelScope.launch {
+            _isProcessing.value = true
+            _processingMessage.value = "Encrypting PDF with 128-bit AES protection..."
+            try {
+                val outputFile = repository.encryptPdf(
+                    context = getApplication(),
+                    sourceUri = uri,
+                    userPassword = userPw,
+                    ownerPassword = ownerPw,
+                    outputName = _encryptOutputName.value,
+                    originalSizeBytes = file.length()
+                )
+                _userMessage.value = "Successfully encrypted and saved ${outputFile.name} (${PdfEngine.formatFileSize(outputFile.length())})!"
+                FirebaseConfigManager.logAnalyticsEvent("pdf_encrypt_success", emptyMap())
+                if (FirebaseConfigManager.isAdMobEnabled.value) {
+                    _showPoliteAdDialog.value = true
+                }
+            } catch (e: Exception) {
+                _userMessage.value = "Encryption failed: ${e.localizedMessage}"
+            } finally {
+                _isProcessing.value = false
+            }
+        }
+    }
+
+    // --- WATERMARK TAB STATE ---
+    private val _watermarkSourceUri = MutableStateFlow<Uri?>(null)
+    val watermarkSourceUri: StateFlow<Uri?> = _watermarkSourceUri.asStateFlow()
+
+    private val _watermarkSourceFile = MutableStateFlow<File?>(null)
+    val watermarkSourceFile: StateFlow<File?> = _watermarkSourceFile.asStateFlow()
+
+    private val _watermarkPageCount = MutableStateFlow(0)
+    val watermarkPageCount: StateFlow<Int> = _watermarkPageCount.asStateFlow()
+
+    private val _watermarkType = MutableStateFlow(com.example.data.pdf.WatermarkType.TEXT)
+    val watermarkType: StateFlow<com.example.data.pdf.WatermarkType> = _watermarkType.asStateFlow()
+
+    private val _watermarkText = MutableStateFlow("CONFIDENTIAL")
+    val watermarkText: StateFlow<String> = _watermarkText.asStateFlow()
+
+    private val _watermarkTextSize = MutableStateFlow(36f)
+    val watermarkTextSize: StateFlow<Float> = _watermarkTextSize.asStateFlow()
+
+    private val _watermarkTextColorRgb = MutableStateFlow(intArrayOf(180, 180, 180))
+    val watermarkTextColorRgb: StateFlow<IntArray> = _watermarkTextColorRgb.asStateFlow()
+
+    private val _watermarkImageUri = MutableStateFlow<Uri?>(null)
+    val watermarkImageUri: StateFlow<Uri?> = _watermarkImageUri.asStateFlow()
+
+    private val _watermarkImageScale = MutableStateFlow(0.4f)
+    val watermarkImageScale: StateFlow<Float> = _watermarkImageScale.asStateFlow()
+
+    private val _watermarkOpacity = MutableStateFlow(0.3f)
+    val watermarkOpacity: StateFlow<Float> = _watermarkOpacity.asStateFlow()
+
+    private val _watermarkRotation = MutableStateFlow(45f)
+    val watermarkRotation: StateFlow<Float> = _watermarkRotation.asStateFlow()
+
+    private val _watermarkPosition = MutableStateFlow(com.example.data.pdf.WatermarkPosition.CENTER)
+    val watermarkPosition: StateFlow<com.example.data.pdf.WatermarkPosition> = _watermarkPosition.asStateFlow()
+
+    private val _watermarkPageRange = MutableStateFlow(com.example.data.pdf.WatermarkPageRange.ALL_PAGES)
+    val watermarkPageRange: StateFlow<com.example.data.pdf.WatermarkPageRange> = _watermarkPageRange.asStateFlow()
+
+    private val _watermarkOutputName = MutableStateFlow("PDFCraft_Watermarked.pdf")
+    val watermarkOutputName: StateFlow<String> = _watermarkOutputName.asStateFlow()
+
+    private val _watermarkPreviewBitmap = MutableStateFlow<android.graphics.Bitmap?>(null)
+    val watermarkPreviewBitmap: StateFlow<android.graphics.Bitmap?> = _watermarkPreviewBitmap.asStateFlow()
+
+    private var watermarkPreviewJob: Job? = null
+
+    fun setWatermarkType(type: com.example.data.pdf.WatermarkType) {
+        _watermarkType.value = type
+        triggerWatermarkPreviewUpdate()
+    }
+
+    fun setWatermarkText(text: String) {
+        _watermarkText.value = text
+        triggerWatermarkPreviewUpdate()
+    }
+
+    fun setWatermarkTextSize(size: Float) {
+        _watermarkTextSize.value = size
+        triggerWatermarkPreviewUpdate()
+    }
+
+    fun setWatermarkTextColorRgb(rgb: IntArray) {
+        _watermarkTextColorRgb.value = rgb
+        triggerWatermarkPreviewUpdate()
+    }
+
+    fun setWatermarkImageUri(uri: Uri?) {
+        _watermarkImageUri.value = uri
+        if (uri != null && _watermarkType.value != com.example.data.pdf.WatermarkType.IMAGE) {
+            _watermarkType.value = com.example.data.pdf.WatermarkType.IMAGE
+        }
+        triggerWatermarkPreviewUpdate()
+    }
+
+    fun setWatermarkImageScale(scale: Float) {
+        _watermarkImageScale.value = scale
+        triggerWatermarkPreviewUpdate()
+    }
+
+    fun setWatermarkOpacity(opacity: Float) {
+        _watermarkOpacity.value = opacity
+        triggerWatermarkPreviewUpdate()
+    }
+
+    fun setWatermarkRotation(angle: Float) {
+        _watermarkRotation.value = angle
+        triggerWatermarkPreviewUpdate()
+    }
+
+    fun setWatermarkPosition(position: com.example.data.pdf.WatermarkPosition) {
+        _watermarkPosition.value = position
+        triggerWatermarkPreviewUpdate()
+    }
+
+    fun setWatermarkPageRange(range: com.example.data.pdf.WatermarkPageRange) {
+        _watermarkPageRange.value = range
+        triggerWatermarkPreviewUpdate()
+    }
+
+    fun setWatermarkOutputName(name: String) {
+        _watermarkOutputName.value = name
+    }
+
+    fun getCurrentWatermarkOptions(): com.example.data.pdf.WatermarkOptions {
+        return com.example.data.pdf.WatermarkOptions(
+            type = _watermarkType.value,
+            text = _watermarkText.value,
+            textSize = _watermarkTextSize.value,
+            textColorRgb = _watermarkTextColorRgb.value,
+            imageUri = _watermarkImageUri.value,
+            imageScale = _watermarkImageScale.value,
+            opacity = _watermarkOpacity.value,
+            rotationAngle = _watermarkRotation.value,
+            position = _watermarkPosition.value,
+            pageRange = _watermarkPageRange.value
+        )
+    }
+
+    fun triggerWatermarkPreviewUpdate() {
+        val uri = _watermarkSourceUri.value ?: return
+        watermarkPreviewJob?.cancel()
+        watermarkPreviewJob = viewModelScope.launch {
+            kotlinx.coroutines.delay(120)
+            val options = getCurrentWatermarkOptions()
+            val bmp = PdfEngine.generateWatermarkedPreview(getApplication(), uri, options)
+            _watermarkPreviewBitmap.value = bmp
+        }
+    }
+
+    fun loadPdfForWatermark(uri: Uri) {
+        viewModelScope.launch {
+            _isProcessing.value = true
+            _processingMessage.value = "Loading PDF for watermarking..."
+            try {
+                val file = PdfEngine.convertAnyFileToPdf(getApplication(), uri)
+                _watermarkSourceUri.value = uri
+                _watermarkSourceFile.value = file
+
+                val pfd = android.os.ParcelFileDescriptor.open(file, android.os.ParcelFileDescriptor.MODE_READ_ONLY)
+                val renderer = android.graphics.pdf.PdfRenderer(pfd)
+                _watermarkPageCount.value = renderer.pageCount
+                recordRecentFileAccess(file, renderer.pageCount)
+                renderer.close()
+                pfd.close()
+
+                _watermarkOutputName.value = "Watermarked_${file.name}"
+                triggerWatermarkPreviewUpdate()
+            } catch (e: Exception) {
+                _userMessage.value = "Could not load PDF: ${e.localizedMessage}"
+            } finally {
+                _isProcessing.value = false
+            }
+        }
+    }
+
+    fun executeWatermark() {
+        val uri = _watermarkSourceUri.value ?: return
+        val file = _watermarkSourceFile.value ?: return
+        val options = getCurrentWatermarkOptions()
+
+        viewModelScope.launch {
+            _isProcessing.value = true
+            _processingMessage.value = "Applying watermark to PDF pages..."
+            try {
+                val outputFile = repository.watermarkPdf(
+                    context = getApplication(),
+                    sourceUri = uri,
+                    options = options,
+                    outputName = _watermarkOutputName.value,
+                    originalSizeBytes = file.length()
+                )
+                _userMessage.value = "Successfully watermarked ${outputFile.name}!"
+                FirebaseConfigManager.logAnalyticsEvent("pdf_watermark_success", emptyMap())
+            } catch (e: Exception) {
+                _userMessage.value = "Watermark failed: ${e.localizedMessage}"
+            } finally {
+                _isProcessing.value = false
+            }
+        }
+    }
+
+    // --- SIGN TAB STATE ---
+    private val _signSourceUri = MutableStateFlow<Uri?>(null)
+    val signSourceUri: StateFlow<Uri?> = _signSourceUri.asStateFlow()
+
+    private val _signSourceFile = MutableStateFlow<File?>(null)
+    val signSourceFile: StateFlow<File?> = _signSourceFile.asStateFlow()
+
+    private val _signPageCount = MutableStateFlow(0)
+    val signPageCount: StateFlow<Int> = _signPageCount.asStateFlow()
+
+    private val _signerName = MutableStateFlow("Authorized Signatory")
+    val signerName: StateFlow<String> = _signerName.asStateFlow()
+
+    private val _signReason = MutableStateFlow("Approved & Verified")
+    val signReason: StateFlow<String> = _signReason.asStateFlow()
+
+    private val _signOutputName = MutableStateFlow("PDFCraft_Signed.pdf")
+    val signOutputName: StateFlow<String> = _signOutputName.asStateFlow()
+
+    fun setSignerName(name: String) {
+        _signerName.value = name
+    }
+
+    fun setSignReason(reason: String) {
+        _signReason.value = reason
+    }
+
+    fun setSignOutputName(name: String) {
+        _signOutputName.value = name
+    }
+
+    fun loadPdfForSign(uri: Uri) {
+        viewModelScope.launch {
+            _isProcessing.value = true
+            _processingMessage.value = "Loading PDF for digital signature..."
+            try {
+                val file = PdfEngine.convertAnyFileToPdf(getApplication(), uri)
+                _signSourceUri.value = uri
+                _signSourceFile.value = file
+
+                val pfd = android.os.ParcelFileDescriptor.open(file, android.os.ParcelFileDescriptor.MODE_READ_ONLY)
+                val renderer = android.graphics.pdf.PdfRenderer(pfd)
+                _signPageCount.value = renderer.pageCount
+                recordRecentFileAccess(file, renderer.pageCount)
+                renderer.close()
+                pfd.close()
+
+                _signOutputName.value = "Signed_${file.name}"
+            } catch (e: Exception) {
+                _userMessage.value = "Could not load PDF: ${e.localizedMessage}"
+            } finally {
+                _isProcessing.value = false
+            }
+        }
+    }
+
+    fun executeSign() {
+        val uri = _signSourceUri.value ?: return
+        val file = _signSourceFile.value ?: return
+        val name = _signerName.value
+        val reason = _signReason.value
+
+        viewModelScope.launch {
+            _isProcessing.value = true
+            _processingMessage.value = "Applying digital signature block..."
+            try {
+                val outputFile = repository.signPdf(
+                    context = getApplication(),
+                    sourceUri = uri,
+                    signerName = name,
+                    reason = reason,
+                    outputName = _signOutputName.value,
+                    originalSizeBytes = file.length()
+                )
+                _userMessage.value = "Successfully signed ${outputFile.name}!"
+                FirebaseConfigManager.logAnalyticsEvent("pdf_sign_success", emptyMap())
+            } catch (e: Exception) {
+                _userMessage.value = "Signature failed: ${e.localizedMessage}"
+            } finally {
+                _isProcessing.value = false
+            }
+        }
+    }
+
+    // --- METADATA EDITING STATE & FUNCTIONS ---
+    private val _metadataSourceUri = MutableStateFlow<Uri?>(null)
+    val metadataSourceUri: StateFlow<Uri?> = _metadataSourceUri.asStateFlow()
+
+    private val _metadataSourceFile = MutableStateFlow<File?>(null)
+    val metadataSourceFile: StateFlow<File?> = _metadataSourceFile.asStateFlow()
+
+    private val _metadataTitle = MutableStateFlow("")
+    val metadataTitle: StateFlow<String> = _metadataTitle.asStateFlow()
+
+    private val _metadataAuthor = MutableStateFlow("")
+    val metadataAuthor: StateFlow<String> = _metadataAuthor.asStateFlow()
+
+    private val _metadataSubject = MutableStateFlow("")
+    val metadataSubject: StateFlow<String> = _metadataSubject.asStateFlow()
+
+    private val _metadataKeywords = MutableStateFlow("")
+    val metadataKeywords: StateFlow<String> = _metadataKeywords.asStateFlow()
+
+    private val _metadataCreator = MutableStateFlow("")
+    val metadataCreator: StateFlow<String> = _metadataCreator.asStateFlow()
+
+    private val _metadataProducer = MutableStateFlow("")
+    val metadataProducer: StateFlow<String> = _metadataProducer.asStateFlow()
+
+    private val _metadataCreationDate = MutableStateFlow("")
+    val metadataCreationDate: StateFlow<String> = _metadataCreationDate.asStateFlow()
+
+    private val _metadataModificationDate = MutableStateFlow("")
+    val metadataModificationDate: StateFlow<String> = _metadataModificationDate.asStateFlow()
+
+    private val _metadataPageCount = MutableStateFlow(0)
+    val metadataPageCount: StateFlow<Int> = _metadataPageCount.asStateFlow()
+
+    private val _metadataFileSizeFormatted = MutableStateFlow("")
+    val metadataFileSizeFormatted: StateFlow<String> = _metadataFileSizeFormatted.asStateFlow()
+
+    private val _metadataOutputName = MutableStateFlow("PDFCraft_Updated.pdf")
+    val metadataOutputName: StateFlow<String> = _metadataOutputName.asStateFlow()
+
+    fun setMetadataTitle(title: String) { _metadataTitle.value = title }
+    fun setMetadataAuthor(author: String) { _metadataAuthor.value = author }
+    fun setMetadataSubject(subject: String) { _metadataSubject.value = subject }
+    fun setMetadataKeywords(keywords: String) { _metadataKeywords.value = keywords }
+    fun setMetadataOutputName(name: String) { _metadataOutputName.value = name }
+
+    fun loadPdfForMetadata(uri: Uri) {
+        viewModelScope.launch {
+            _isProcessing.value = true
+            _processingMessage.value = "Reading document metadata..."
+            try {
+                val file = PdfEngine.convertAnyFileToPdf(getApplication(), uri)
+                _metadataSourceUri.value = uri
+                _metadataSourceFile.value = file
+
+                val meta = PdfEngine.readPdfMetadata(getApplication(), uri)
+                _metadataTitle.value = meta.title ?: ""
+                _metadataAuthor.value = meta.author ?: ""
+                _metadataSubject.value = meta.subject ?: ""
+                _metadataKeywords.value = meta.keywords ?: ""
+                _metadataCreator.value = meta.creator ?: ""
+                _metadataProducer.value = meta.producer ?: ""
+                _metadataCreationDate.value = meta.creationDateFormatted ?: ""
+                _metadataModificationDate.value = meta.modDateFormatted ?: ""
+                _metadataPageCount.value = meta.pageCount
+                _metadataFileSizeFormatted.value = meta.fileSizeFormatted
+
+                recordRecentFileAccess(file, meta.pageCount)
+
+                _metadataOutputName.value = "Updated_${file.name}"
+            } catch (e: Exception) {
+                _userMessage.value = "Could not load PDF metadata: ${e.localizedMessage}"
+            } finally {
+                _isProcessing.value = false
+            }
+        }
+    }
+
+    fun executeMetadataUpdate() {
+        val uri = _metadataSourceUri.value ?: return
+        val file = _metadataSourceFile.value ?: return
+
+        val metadata = com.example.data.pdf.PdfMetadata(
+            fileName = file.name,
+            filePath = file.absolutePath,
+            fileSizeFormatted = _metadataFileSizeFormatted.value,
+            fileSizeBytes = file.length(),
+            title = _metadataTitle.value,
+            author = _metadataAuthor.value,
+            subject = _metadataSubject.value,
+            keywords = _metadataKeywords.value,
+            creator = _metadataCreator.value,
+            producer = _metadataProducer.value,
+            pageCount = _metadataPageCount.value,
+            creationDateFormatted = _metadataCreationDate.value,
+            modDateFormatted = _metadataModificationDate.value,
+            isEncrypted = false
+        )
+
+        viewModelScope.launch {
+            _isProcessing.value = true
+            _processingMessage.value = "Saving updated metadata..."
+            try {
+                val outputFile = repository.updatePdfMetadata(
+                    context = getApplication(),
+                    sourceUri = uri,
+                    metadata = metadata,
+                    outputName = _metadataOutputName.value,
+                    originalSizeBytes = file.length()
+                )
+                _userMessage.value = "Successfully updated document metadata in ${outputFile.name}!"
+                FirebaseConfigManager.logAnalyticsEvent("pdf_metadata_update_success", emptyMap())
+            } catch (e: Exception) {
+                _userMessage.value = "Metadata update failed: ${e.localizedMessage}"
+            } finally {
+                _isProcessing.value = false
+            }
+        }
+    }
+
+    // --- ROTATE SCREEN STATE & FUNCTIONS ---
+    private val _rotateSourceUri = MutableStateFlow<Uri?>(null)
+    val rotateSourceUri: StateFlow<Uri?> = _rotateSourceUri.asStateFlow()
+
+    private val _rotateSourceFile = MutableStateFlow<File?>(null)
+    val rotateSourceFile: StateFlow<File?> = _rotateSourceFile.asStateFlow()
+
+    private val _rotatePageCount = MutableStateFlow(0)
+    val rotatePageCount: StateFlow<Int> = _rotatePageCount.asStateFlow()
+
+    private val _rotateSelectedPages = MutableStateFlow<Set<Int>>(emptySet())
+    val rotateSelectedPages: StateFlow<Set<Int>> = _rotateSelectedPages.asStateFlow()
+
+    private val _rotatePageRotations = MutableStateFlow<Map<Int, Int>>(emptyMap())
+    val rotatePageRotations: StateFlow<Map<Int, Int>> = _rotatePageRotations.asStateFlow()
+
+    private val _rotateOutputName = MutableStateFlow("PDFCraft_Rotated.pdf")
+    val rotateOutputName: StateFlow<String> = _rotateOutputName.asStateFlow()
+
+    fun setRotateOutputName(name: String) { _rotateOutputName.value = name }
+
+    fun loadPdfForRotate(uri: Uri) {
+        viewModelScope.launch {
+            _isProcessing.value = true
+            _processingMessage.value = "Analyzing document for page rotation..."
+            try {
+                val file = PdfEngine.convertAnyFileToPdf(getApplication(), uri)
+                val info = PdfEngine.readPdfMetadata(getApplication(), uri)
+                _rotateSourceUri.value = uri
+                _rotateSourceFile.value = file
+                _rotatePageCount.value = info.pageCount
+                _rotateSelectedPages.value = (0 until info.pageCount).toSet() // select all by default
+                _rotatePageRotations.value = emptyMap()
+                _rotateOutputName.value = "Rotated_${file.name}"
+
+                recordRecentFileAccess(file, info.pageCount)
+            } catch (e: Exception) {
+                _userMessage.value = "Could not load document for rotation: ${e.localizedMessage}"
+            } finally {
+                _isProcessing.value = false
+            }
+        }
+    }
+
+    fun toggleSelectRotatePage(pageIndex: Int) {
+        val current = _rotateSelectedPages.value.toMutableSet()
+        if (current.contains(pageIndex)) {
+            current.remove(pageIndex)
+        } else {
+            current.add(pageIndex)
+        }
+        _rotateSelectedPages.value = current
+    }
+
+    fun selectAllRotatePages() {
+        _rotateSelectedPages.value = (0 until _rotatePageCount.value).toSet()
+    }
+
+    fun clearRotatePageSelection() {
+        _rotateSelectedPages.value = emptySet()
+    }
+
+    fun rotateSelectedPagesBy(degrees: Int) {
+        val currentRotations = _rotatePageRotations.value.toMutableMap()
+        for (pageIdx in _rotateSelectedPages.value) {
+            val oldDeg = currentRotations[pageIdx] ?: 0
+            val newDeg = (oldDeg + degrees) % 360
+            currentRotations[pageIdx] = if (newDeg < 0) newDeg + 360 else newDeg
+        }
+        _rotatePageRotations.value = currentRotations
+    }
+
+    fun rotateSinglePage(pageIndex: Int, degrees: Int) {
+        val currentRotations = _rotatePageRotations.value.toMutableMap()
+        val oldDeg = currentRotations[pageIndex] ?: 0
+        val newDeg = (oldDeg + degrees) % 360
+        currentRotations[pageIndex] = if (newDeg < 0) newDeg + 360 else newDeg
+        _rotatePageRotations.value = currentRotations
+    }
+
+    fun resetRotatePageRotations() {
+        _rotatePageRotations.value = emptyMap()
+    }
+
+    fun executePdfRotate() {
+        val uri = _rotateSourceUri.value ?: return
+        val file = _rotateSourceFile.value ?: return
+        val rotations = _rotatePageRotations.value
+
+        if (rotations.isEmpty() || rotations.all { it.value % 360 == 0 }) {
+            _userMessage.value = "No page rotation changes specified. Please rotate pages before exporting."
+            return
+        }
+
+        viewModelScope.launch {
+            _isProcessing.value = true
+            _processingMessage.value = "Rotating document pages and saving file..."
+            try {
+                val outputFile = repository.rotatePdfPages(
+                    context = getApplication(),
+                    sourceUri = uri,
+                    pageRotations = rotations,
+                    outputName = _rotateOutputName.value,
+                    originalSizeBytes = file.length(),
+                    pageCount = _rotatePageCount.value
+                )
+                _userMessage.value = "Successfully saved rotated PDF to ${outputFile.name}!"
+                FirebaseConfigManager.logAnalyticsEvent("pdf_rotate_pages_success", emptyMap())
+            } catch (e: Exception) {
+                _userMessage.value = "Page rotation failed: ${e.localizedMessage}"
+            } finally {
+                _isProcessing.value = false
+            }
+        }
+    }
 }
+

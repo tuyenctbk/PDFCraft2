@@ -6,26 +6,14 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -34,19 +22,8 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.FolderSpecial
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Speed
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,27 +37,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.example.R
-import com.example.ui.theme.CharcoalBackground
-import com.example.ui.theme.CharcoalCard
-import com.example.ui.theme.CharcoalCardBorder
-import com.example.ui.theme.EmeraldContainer
 import com.example.ui.theme.EmeraldPrimary
-import com.example.ui.theme.OnEmeraldContainer
-import com.example.ui.theme.TextMuted
-import com.example.ui.theme.TextPrimary
-import com.example.ui.theme.TextSecondary
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OnboardingScreen(
     onFinishOnboarding: () -> Unit
 ) {
     val context = LocalContext.current
-    var currentPage by remember { mutableIntStateOf(0) }
+    val coroutineScope = rememberCoroutineScope()
+    val pagerState = rememberPagerState(pageCount = { 3 })
 
     // Check runtime permission state
     var isPermissionGranted by remember {
-        mutableStateOf(checkStorageOrNotificationPermission(context))
+        mutableStateOf<Boolean>(checkStorageOrNotificationPermission(context))
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -108,159 +79,167 @@ fun OnboardingScreen(
         )
     )
 
-    Column(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Top Bar (Skip action)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        val isWideScreen = maxWidth > 600.dp
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .widthIn(max = 640.dp)
+                .align(Alignment.Center)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(10.dp)
-                        .clip(CircleShape)
-                        .background(EmeraldPrimary)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "PDFCRAFT",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.2.sp
-                    )
-                )
-            }
-
-            if (currentPage < pages.size - 1) {
-                TextButton(onClick = onFinishOnboarding) {
-                    Text(
-                        text = stringResource(R.string.onboarding_skip),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                }
-            } else {
-                Spacer(modifier = Modifier.width(48.dp))
-            }
-        }
-
-        // Center Content Page
-        AnimatedContent(
-            targetState = currentPage,
-            transitionSpec = { fadeIn() togetherWith fadeOut() },
-            modifier = Modifier.weight(1f),
-            label = "onboardingAnimation"
-        ) { pageIdx ->
-            val page = pages[pageIdx]
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(vertical = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+            // Top Bar (App Title & Skip action)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Hero Graphic Box / Logo Badge (Crisp white background with emerald border)
-                Box(
-                    modifier = Modifier
-                        .size(128.dp)
-                        .clip(RoundedCornerShape(32.dp))
-                        .background(Color.White)
-                        .border(2.dp, EmeraldPrimary, RoundedCornerShape(32.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = page.icon,
-                        contentDescription = null,
-                        tint = EmeraldPrimary,
-                        modifier = Modifier.size(60.dp)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .clip(CircleShape)
+                            .background(EmeraldPrimary)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "PDFCRAFT",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.2.sp
+                        )
                     )
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                if (pagerState.currentPage < pages.size - 1) {
+                    TextButton(onClick = onFinishOnboarding) {
+                        Text(
+                            text = stringResource(R.string.onboarding_skip),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                } else {
+                    Spacer(modifier = Modifier.width(48.dp))
+                }
+            }
 
-                Text(
-                    text = stringResource(page.titleRes),
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    textAlign = TextAlign.Center
-                )
+            // Horizontal Pager for left/right swipe
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.weight(1f)
+            ) { pageIdx ->
+                val page = pages[pageIdx]
+                val scrollState = rememberScrollState()
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(scrollState)
+                        .padding(vertical = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(if (isWideScreen) 140.dp else 110.dp)
+                            .clip(RoundedCornerShape(32.dp))
+                            .background(Color.White)
+                            .border(2.dp, EmeraldPrimary, RoundedCornerShape(32.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = page.icon,
+                            contentDescription = null,
+                            tint = EmeraldPrimary,
+                            modifier = Modifier.size(if (isWideScreen) 64.dp else 52.dp)
+                        )
+                    }
 
-                Text(
-                    text = stringResource(page.descRes),
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = 22.sp
-                    ),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                if (page.isPermissionPage) {
-                    Spacer(modifier = Modifier.height(28.dp))
-                    if (isPermissionGranted) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFFD1FAE5))
-                                .border(1.dp, EmeraldPrimary.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-                                .padding(horizontal = 18.dp, vertical = 12.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = null,
-                                    tint = EmeraldPrimary,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = stringResource(R.string.permission_granted),
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        color = Color(0xFF065F46),
-                                        fontWeight = FontWeight.Bold
+                    Text(
+                        text = stringResource(page.titleRes),
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = stringResource(page.descRes),
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 22.sp
+                        ),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+
+                    if (page.isPermissionPage) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        if (isPermissionGranted) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFFD1FAE5))
+                                    .border(1.dp, EmeraldPrimary.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                                    .padding(horizontal = 18.dp, vertical = 12.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.CheckCircle,
+                                        contentDescription = null,
+                                        tint = EmeraldPrimary,
+                                        modifier = Modifier.size(20.dp)
                                     )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = stringResource(R.string.permission_granted),
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            color = Color(0xFF065F46),
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    )
+                                }
+                            }
+                        } else {
+                            Button(
+                                onClick = {
+                                    val permissionsToRequest = mutableListOf<String>()
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                        permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+                                        permissionsToRequest.add(Manifest.permission.READ_MEDIA_IMAGES)
+                                    } else {
+                                        permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                                        permissionsToRequest.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                    }
+                                    permissionLauncher.launch(permissionsToRequest.toTypedArray())
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.grant_permission),
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold
                                 )
                             }
-                        }
-                    } else {
-                        Button(
-                            onClick = {
-                                val permissionsToRequest = mutableListOf<String>()
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                    permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
-                                    permissionsToRequest.add(Manifest.permission.READ_MEDIA_IMAGES)
-                                } else {
-                                    permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
-                                    permissionsToRequest.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                                }
-                                permissionLauncher.launch(permissionsToRequest.toTypedArray())
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.grant_permission),
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold
-                            )
                         }
                     }
                 }
             }
-        }
 
         // Bottom Controls (Page Indicators & Next/Start Button)
         Column(
@@ -274,7 +253,7 @@ fun OnboardingScreen(
                 modifier = Modifier.padding(bottom = 24.dp)
             ) {
                 pages.indices.forEach { index ->
-                    val isActive = index == currentPage
+                    val isActive = index == pagerState.currentPage
                     Box(
                         modifier = Modifier
                             .padding(horizontal = 4.dp)
@@ -289,10 +268,12 @@ fun OnboardingScreen(
             // Primary Action Button
             Button(
                 onClick = {
-                    if (currentPage < pages.size - 1) {
-                        currentPage++
-                    } else {
-                        onFinishOnboarding()
+                    coroutineScope.launch {
+                        if (pagerState.currentPage < pages.size - 1) {
+                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                        } else {
+                            onFinishOnboarding()
+                        }
                     }
                 },
                 modifier = Modifier
@@ -303,7 +284,7 @@ fun OnboardingScreen(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = if (currentPage == pages.size - 1) {
+                        text = if (pagerState.currentPage == pages.size - 1) {
                             stringResource(R.string.onboarding_get_started)
                         } else {
                             stringResource(R.string.onboarding_next)
@@ -324,6 +305,7 @@ fun OnboardingScreen(
             }
         }
     }
+}
 }
 
 private data class OnboardingPageData(

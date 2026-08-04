@@ -36,7 +36,7 @@ object PdfBoxMergeService {
             val tempFilesToClean = mutableListOf<File>()
 
             for (uri in pdfUris) {
-                val tempFile = PdfEngine.getLocalFileFromUri(context, uri)
+                val tempFile = PdfEngine.convertAnyFileToPdf(context, uri)
                 merger.addSource(tempFile)
                 tempFilesToClean.add(tempFile)
             }
@@ -61,7 +61,7 @@ object PdfBoxMergeService {
         val destinationDoc = PDDocument()
         try {
             for (uri in pdfUris) {
-                val file = PdfEngine.getLocalFileFromUri(context, uri)
+                val file = PdfEngine.convertAnyFileToPdf(context, uri)
                 FileInputStream(file).use { inputStream ->
                     PDDocument.load(inputStream).use { sourceDoc ->
                         for (i in 0 until sourceDoc.numberOfPages) {

@@ -85,14 +85,34 @@ object PdfEngine {
     )
 
     /**
-     * Copies a Uri content stream to a temporary local cache file.
+     * Copies a Uri content stream to a temporary local cache file while preserving file name and extension.
      */
     suspend fun getLocalFileFromUri(context: Context, uri: Uri): File = withContext(Dispatchers.IO) {
         if (uri.scheme == "file" && uri.path != null) {
             return@withContext File(uri.path!!)
         }
         val cacheDir = File(context.cacheDir, "imported_pdfs").apply { mkdirs() }
-        val tempFile = File(cacheDir, "doc_${System.currentTimeMillis()}_${(1000..9999).random()}.pdf")
+        var resolvedName: String? = null
+        try {
+            context.contentResolver.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val nameIdx = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                    if (nameIdx != -1) {
+                        resolvedName = cursor.getString(nameIdx)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error resolving display name for URI", e)
+        }
+
+        val fileName = if (!resolvedName.isNullOrBlank()) {
+            resolvedName!!
+        } else {
+            "doc_${System.currentTimeMillis()}_${(1000..9999).random()}"
+        }
+
+        val tempFile = File(cacheDir, fileName)
         context.contentResolver.openInputStream(uri)?.use { input ->
             FileOutputStream(tempFile).use { output ->
                 input.copyTo(output)
@@ -716,4 +736,617 @@ object PdfEngine {
         }
         return@withContext null
     }
+
+    /**
+     * Encrypts and password-protects a PDF file with 128-bit AES encryption.
+     */
+    suspend fun encryptPdf(
+        context: Context,
+        sourceUri: Uri,
+        userPassword: String,
+        ownerPassword: String,
+        outputFileName: String
+    ): File = withContext(Dispatchers.IO) {
+        val localFile = getLocalFileFromUri(context, sourceUri)
+        val outputDir = File(context.filesDir, "exports").apply { mkdirs() }
+        val outputFile = File(outputDir, if (outputFileName.endsWith(".pdf")) outputFileName else "$outputFileName.pdf")
+
+        com.tom_roush.pdfbox.pdmodel.PDDocument.load(localFile).use { doc ->
+            val ap = com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission().apply {
+                setCanExtractContent(true)
+                setCanAssembleDocument(true)
+                setCanPrint(true)
+            }
+            val spp = com.tom_roush.pdfbox.pdmodel.encryption.StandardProtectionPolicy(ownerPassword, userPassword, ap).apply {
+                encryptionKeyLength = 128
+            }
+            doc.protect(spp)
+            doc.save(outputFile)
+        }
+        outputFile
+    }
+    /**
+     * Watermarks all pages of a PDF with text.
+     */
+    suspend fun watermarkPdf(
+        context: Context,
+        sourceUri: Uri,
+        watermarkText: String,
+        outputFileName: String
+    ): File = watermarkPdf(
+        context = context,
+        sourceUri = sourceUri,
+        options = WatermarkOptions(text = watermarkText),
+        outputFileName = outputFileName
+    )
+
+    suspend fun watermarkPdf(
+        context: Context,
+        sourceUri: Uri,
+        options: WatermarkOptions,
+        outputFileName: String
+    ): File = withContext(Dispatchers.IO) {
+        val localFile = getLocalFileFromUri(context, sourceUri)
+        val outputDir = File(context.filesDir, "exports").apply { mkdirs() }
+        val outputFile = File(outputDir, if (outputFileName.endsWith(".pdf")) outputFileName else "$outputFileName.pdf")
+
+        com.tom_roush.pdfbox.pdmodel.PDDocument.load(localFile).use { doc ->
+            applyWatermarkToDocument(context, doc, options)
+            doc.save(outputFile)
+        }
+        outputFile
+    }
+
+    suspend fun generateWatermarkedPreview(
+        context: Context,
+        sourceUri: Uri,
+        options: WatermarkOptions,
+        widthPx: Int = 400
+    ): Bitmap? = withContext(Dispatchers.IO) {
+        try {
+            val localFile = getLocalFileFromUri(context, sourceUri)
+            val tempDir = File(context.cacheDir, "preview_watermark").apply { mkdirs() }
+            val tempWatermarkedFile = File(tempDir, "preview_temp_${System.currentTimeMillis()}.pdf")
+
+            com.tom_roush.pdfbox.pdmodel.PDDocument.load(localFile).use { doc ->
+                if (doc.numberOfPages == 0) return@withContext null
+                while (doc.numberOfPages > 1) {
+                    doc.removePage(1)
+                }
+                applyWatermarkToDocument(context, doc, options)
+                doc.save(tempWatermarkedFile)
+            }
+
+            val pfd = android.os.ParcelFileDescriptor.open(tempWatermarkedFile, android.os.ParcelFileDescriptor.MODE_READ_ONLY)
+            val renderer = android.graphics.pdf.PdfRenderer(pfd)
+            if (renderer.pageCount == 0) {
+                renderer.close()
+                pfd.close()
+                tempWatermarkedFile.delete()
+                return@withContext null
+            }
+            val page = renderer.openPage(0)
+            val targetHeight = (widthPx * (page.height.toFloat() / page.width.toFloat())).toInt()
+            val bitmap = Bitmap.createBitmap(widthPx, targetHeight, Bitmap.Config.ARGB_8888)
+            val canvas = android.graphics.Canvas(bitmap)
+            canvas.drawColor(android.graphics.Color.WHITE)
+            page.render(bitmap, null, null, android.graphics.pdf.PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+            page.close()
+            renderer.close()
+            pfd.close()
+            tempWatermarkedFile.delete()
+            bitmap
+        } catch (e: Exception) {
+            Log.e(TAG, "Error generating watermarked preview", e)
+            null
+        }
+    }
+
+    private suspend fun applyWatermarkToDocument(
+        context: Context,
+        doc: com.tom_roush.pdfbox.pdmodel.PDDocument,
+        options: WatermarkOptions
+    ) {
+        val pageCount = doc.numberOfPages
+
+        var pdImage: com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject? = null
+        var rawBitmap: Bitmap? = null
+        if (options.type == WatermarkType.IMAGE && options.imageUri != null) {
+            try {
+                val imgFile = getLocalFileFromUri(context, options.imageUri)
+                rawBitmap = android.graphics.BitmapFactory.decodeFile(imgFile.absolutePath)
+                    ?: context.contentResolver.openInputStream(options.imageUri)?.use { android.graphics.BitmapFactory.decodeStream(it) }
+                if (rawBitmap != null) {
+                    pdImage = com.tom_roush.pdfbox.pdmodel.graphics.image.LosslessFactory.createFromImage(doc, rawBitmap)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to load watermark image", e)
+            }
+        }
+
+        val font = com.tom_roush.pdfbox.pdmodel.font.PDType1Font.HELVETICA_BOLD
+
+        for (i in 0 until pageCount) {
+            val shouldApply = when (options.pageRange) {
+                WatermarkPageRange.ALL_PAGES -> true
+                WatermarkPageRange.FIRST_PAGE_ONLY -> i == 0
+                WatermarkPageRange.EVEN_PAGES -> (i + 1) % 2 == 0
+                WatermarkPageRange.ODD_PAGES -> (i + 1) % 2 != 0
+            }
+            if (!shouldApply) continue
+
+            val page = doc.getPage(i)
+            val mediaBox = page.mediaBox
+            val width = mediaBox.width
+            val height = mediaBox.height
+
+            val contentStream = com.tom_roush.pdfbox.pdmodel.PDPageContentStream(
+                doc,
+                page,
+                com.tom_roush.pdfbox.pdmodel.PDPageContentStream.AppendMode.APPEND,
+                true,
+                true
+            )
+
+            val gState = com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState().apply {
+                nonStrokingAlphaConstant = options.opacity.coerceIn(0.05f, 1.0f)
+                strokingAlphaConstant = options.opacity.coerceIn(0.05f, 1.0f)
+            }
+            contentStream.setGraphicsStateParameters(gState)
+
+            if (options.type == WatermarkType.TEXT) {
+                val textToDraw = options.text.ifBlank { "CONFIDENTIAL" }
+                contentStream.setNonStrokingColor(
+                    options.textColorRgb[0].coerceIn(0, 255),
+                    options.textColorRgb[1].coerceIn(0, 255),
+                    options.textColorRgb[2].coerceIn(0, 255)
+                )
+                contentStream.setFont(font, options.textSize)
+
+                val textWidth = (font.getStringWidth(textToDraw) / 1000f) * options.textSize
+                val textHeight = (font.fontDescriptor.capHeight / 1000f) * options.textSize
+
+                if (options.position == WatermarkPosition.TILE) {
+                    val xStep = maxOf(textWidth * 1.4f, 160f)
+                    val yStep = maxOf(textHeight * 3.5f, 120f)
+                    var y = 40f
+                    while (y < height) {
+                        var x = 30f
+                        while (x < width) {
+                            contentStream.beginText()
+                            val matrix = com.tom_roush.pdfbox.util.Matrix.getRotateInstance(
+                                Math.toRadians(options.rotationAngle.toDouble()),
+                                x,
+                                y
+                            )
+                            contentStream.setTextMatrix(matrix)
+                            contentStream.showText(textToDraw)
+                            contentStream.endText()
+                            x += xStep
+                        }
+                        y += yStep
+                    }
+                } else {
+                    val (baseX, baseY) = calculateTextCoordinates(options.position, width, height, textWidth, textHeight)
+                    contentStream.beginText()
+                    val matrix = com.tom_roush.pdfbox.util.Matrix.getRotateInstance(
+                        Math.toRadians(options.rotationAngle.toDouble()),
+                        baseX,
+                        baseY
+                    )
+                    contentStream.setTextMatrix(matrix)
+                    contentStream.showText(textToDraw)
+                    contentStream.endText()
+                }
+            } else if (options.type == WatermarkType.IMAGE && pdImage != null && rawBitmap != null) {
+                val imgWidth = rawBitmap.width * options.imageScale
+                val imgHeight = rawBitmap.height * options.imageScale
+
+                if (options.position == WatermarkPosition.TILE) {
+                    val xStep = maxOf(imgWidth * 1.5f, 120f)
+                    val yStep = maxOf(imgHeight * 1.5f, 120f)
+                    var y = 40f
+                    while (y < height) {
+                        var x = 40f
+                        while (x < width) {
+                            val matrix = com.tom_roush.pdfbox.util.Matrix.getRotateInstance(
+                                Math.toRadians(options.rotationAngle.toDouble()),
+                                x,
+                                y
+                            )
+                            matrix.scale(imgWidth, imgHeight)
+                            contentStream.drawImage(pdImage, matrix)
+                            x += xStep
+                        }
+                        y += yStep
+                    }
+                } else {
+                    val (baseX, baseY) = calculateImageCoordinates(options.position, width, height, imgWidth, imgHeight)
+                    val matrix = com.tom_roush.pdfbox.util.Matrix.getRotateInstance(
+                        Math.toRadians(options.rotationAngle.toDouble()),
+                        baseX,
+                        baseY
+                    )
+                    matrix.scale(imgWidth, imgHeight)
+                    contentStream.drawImage(pdImage, matrix)
+                }
+            }
+
+            contentStream.close()
+        }
+
+        rawBitmap?.let {
+            try { it.recycle() } catch (_: Exception) {}
+        }
+    }
+
+    private fun calculateTextCoordinates(
+        position: WatermarkPosition,
+        width: Float,
+        height: Float,
+        textWidth: Float,
+        textHeight: Float
+    ): Pair<Float, Float> {
+        return when (position) {
+            WatermarkPosition.CENTER -> Pair((width - textWidth) / 2f, (height - textHeight) / 2f)
+            WatermarkPosition.TOP_LEFT -> Pair(40f, height - 60f)
+            WatermarkPosition.TOP_RIGHT -> Pair(maxOf(40f, width - textWidth - 40f), height - 60f)
+            WatermarkPosition.BOTTOM_LEFT -> Pair(40f, 40f)
+            WatermarkPosition.BOTTOM_RIGHT -> Pair(maxOf(40f, width - textWidth - 40f), 40f)
+            WatermarkPosition.TILE -> Pair((width - textWidth) / 2f, (height - textHeight) / 2f)
+        }
+    }
+
+    private fun calculateImageCoordinates(
+        position: WatermarkPosition,
+        width: Float,
+        height: Float,
+        imgWidth: Float,
+        imgHeight: Float
+    ): Pair<Float, Float> {
+        return when (position) {
+            WatermarkPosition.CENTER -> Pair((width - imgWidth) / 2f, maxOf(40f, (height - imgHeight) / 2f))
+            WatermarkPosition.TOP_LEFT -> Pair(40f, maxOf(40f, height - imgHeight - 40f))
+            WatermarkPosition.TOP_RIGHT -> Pair(maxOf(40f, width - imgWidth - 40f), maxOf(40f, height - imgHeight - 40f))
+            WatermarkPosition.BOTTOM_LEFT -> Pair(40f, 40f)
+            WatermarkPosition.BOTTOM_RIGHT -> Pair(maxOf(40f, width - imgWidth - 40f), 40f)
+            WatermarkPosition.TILE -> Pair((width - imgWidth) / 2f, maxOf(40f, (height - imgHeight) / 2f))
+        }
+    }
+
+    /**
+     * Adds a digital signature text box to the last page of a PDF.
+     */
+    suspend fun signPdf(
+        context: Context,
+        sourceUri: Uri,
+        signerName: String,
+        reason: String,
+        outputFileName: String
+    ): File = withContext(Dispatchers.IO) {
+        val localFile = getLocalFileFromUri(context, sourceUri)
+        val outputDir = File(context.filesDir, "exports").apply { mkdirs() }
+        val outputFile = File(outputDir, if (outputFileName.endsWith(".pdf")) outputFileName else "$outputFileName.pdf")
+
+        com.tom_roush.pdfbox.pdmodel.PDDocument.load(localFile).use { doc ->
+            val lastPage = doc.getPage(doc.numberOfPages - 1)
+            val mediaBox = lastPage.mediaBox
+
+            val contentStream = com.tom_roush.pdfbox.pdmodel.PDPageContentStream(
+                doc,
+                lastPage,
+                com.tom_roush.pdfbox.pdmodel.PDPageContentStream.AppendMode.APPEND,
+                true,
+                true
+            )
+            contentStream.beginText()
+            val font = com.tom_roush.pdfbox.pdmodel.font.PDType1Font.HELVETICA
+            contentStream.setFont(font, 10f)
+            contentStream.setNonStrokingColor(30, 30, 30)
+
+            val x = 50f
+            val y = 50f
+            contentStream.newLineAtOffset(x, y)
+            contentStream.showText("Digitally Signed by: $signerName")
+            contentStream.newLineAtOffset(0f, -12f)
+            contentStream.showText("Reason: $reason")
+            contentStream.newLineAtOffset(0f, -12f)
+            contentStream.showText("Date: ${java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())}")
+            contentStream.endText()
+            contentStream.close()
+
+            doc.save(outputFile)
+        }
+        outputFile
+    }
+
+    /**
+     * Converts any input file (PDF, Images like JPG/PNG/WEBP/BMP/GIF/HEIC, or Text/Document files) into a standard PDF file.
+     */
+    suspend fun convertAnyFileToPdf(context: Context, sourceUri: Uri): File = withContext(Dispatchers.IO) {
+        val mimeType = context.contentResolver.getType(sourceUri) ?: ""
+        val localFile = getLocalFileFromUri(context, sourceUri)
+        
+        if (mimeType.contains("pdf", ignoreCase = true) || localFile.name.lowercase().endsWith(".pdf")) {
+            return@withContext localFile
+        }
+
+        val outputDir = File(context.filesDir, "converted").apply { mkdirs() }
+        val outputFile = File(outputDir, "Converted_${localFile.nameWithoutExtension}_${System.currentTimeMillis()}.pdf")
+
+        val pdfDocument = android.graphics.pdf.PdfDocument()
+        try {
+            val isImage = mimeType.startsWith("image/", ignoreCase = true) ||
+                    localFile.name.lowercase().matches(Regex(".*\\.(jpg|jpeg|png|webp|bmp|gif|heic|heif)$"))
+
+            if (isImage) {
+                var bitmap = android.graphics.BitmapFactory.decodeFile(localFile.absolutePath)
+                if (bitmap == null) {
+                    context.contentResolver.openInputStream(sourceUri)?.use { input ->
+                        bitmap = android.graphics.BitmapFactory.decodeStream(input)
+                    }
+                }
+
+                if (bitmap != null && bitmap.width > 0 && bitmap.height > 0) {
+                    val w = bitmap.width
+                    val h = bitmap.height
+                    val pageInfo = android.graphics.pdf.PdfDocument.PageInfo.Builder(w, h, 1).create()
+                    val page = pdfDocument.startPage(pageInfo)
+                    page.canvas.drawBitmap(bitmap, 0f, 0f, null)
+                    pdfDocument.finishPage(page)
+                    try { bitmap.recycle() } catch (_: Exception) {}
+                }
+            } else {
+                val text = try {
+                    localFile.readText(Charsets.UTF_8)
+                } catch (e: Exception) {
+                    try {
+                        localFile.readBytes().toString(Charsets.ISO_8859_1)
+                    } catch (_: Exception) {
+                        "Cannot parse file text content"
+                    }
+                }
+                val paint = android.text.TextPaint().apply {
+                    textSize = 13f
+                    color = android.graphics.Color.BLACK
+                    isAntiAlias = true
+                }
+                val pageWidth = 595
+                val pageHeight = 842
+                val margin = 40f
+                val maxTextWidth = pageWidth - 2 * margin
+
+                // Word wrap text lines
+                val wrappedLines = mutableListOf<String>()
+                val rawLines = text.split("\n")
+                for (rawLine in rawLines) {
+                    if (rawLine.isEmpty()) {
+                        wrappedLines.add("")
+                        continue
+                    }
+                    var currentLine = StringBuilder()
+                    val words = rawLine.split(Regex("\\s+"))
+                    for (word in words) {
+                        val testString = if (currentLine.isEmpty()) word else "$currentLine $word"
+                        if (paint.measureText(testString) <= maxTextWidth) {
+                            if (currentLine.isNotEmpty()) currentLine.append(" ")
+                            currentLine.append(word)
+                        } else {
+                            if (currentLine.isNotEmpty()) {
+                                wrappedLines.add(currentLine.toString())
+                                currentLine = StringBuilder(word)
+                            } else {
+                                wrappedLines.add(word)
+                            }
+                        }
+                    }
+                    if (currentLine.isNotEmpty()) {
+                        wrappedLines.add(currentLine.toString())
+                    }
+                }
+
+                var pageNum = 1
+                val pageInfo = android.graphics.pdf.PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageNum).create()
+                var page = pdfDocument.startPage(pageInfo)
+                var canvas = page.canvas
+
+                var y = 50f
+                val lineHeight = 18f
+
+                for (line in wrappedLines) {
+                    if (y > pageHeight - margin) {
+                        pdfDocument.finishPage(page)
+                        pageNum++
+                        val nextPageInfo = android.graphics.pdf.PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageNum).create()
+                        page = pdfDocument.startPage(nextPageInfo)
+                        canvas = page.canvas
+                        y = 50f
+                    }
+                    canvas.drawText(line, margin, y, paint)
+                    y += lineHeight
+                }
+                pdfDocument.finishPage(page)
+            }
+
+            FileOutputStream(outputFile).use { fos ->
+                pdfDocument.writeTo(fos)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to convert file to PDF: ${e.localizedMessage}", e)
+            throw e
+        } finally {
+            pdfDocument.close()
+        }
+
+        outputFile
+    }
+
+    suspend fun readPdfMetadata(
+        context: Context,
+        sourceUri: Uri
+    ): PdfMetadata = withContext(Dispatchers.IO) {
+        val file = getLocalFileFromUri(context, sourceUri)
+        var metadata = PdfMetadata(
+            fileName = file.name,
+            filePath = file.absolutePath,
+            fileSizeFormatted = formatFileSize(file.length()),
+            fileSizeBytes = file.length(),
+            title = "",
+            author = "",
+            subject = "",
+            keywords = "",
+            creator = "PDFCraft Studio",
+            producer = "Apache PDFBox",
+            pageCount = 0,
+            creationDateFormatted = "Unknown",
+            modDateFormatted = "Unknown",
+            isEncrypted = false
+        )
+        try {
+            com.tom_roush.pdfbox.pdmodel.PDDocument.load(file).use { doc ->
+                val info = doc.documentInformation
+                val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault())
+                val cDateStr = info?.creationDate?.time?.let { dateFormat.format(it) } ?: "Unknown"
+                val mDateStr = info?.modificationDate?.time?.let { dateFormat.format(it) } ?: "Unknown"
+
+                metadata = PdfMetadata(
+                    fileName = file.name,
+                    filePath = file.absolutePath,
+                    fileSizeFormatted = formatFileSize(file.length()),
+                    fileSizeBytes = file.length(),
+                    title = info?.title ?: "",
+                    author = info?.author ?: "",
+                    subject = info?.subject ?: "",
+                    keywords = info?.keywords ?: "",
+                    creator = info?.creator ?: "PDFCraft Studio",
+                    producer = info?.producer ?: "Apache PDFBox",
+                    pageCount = doc.numberOfPages,
+                    creationDateFormatted = cDateStr,
+                    modDateFormatted = mDateStr,
+                    isEncrypted = doc.isEncrypted
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error reading PDF metadata", e)
+        }
+        metadata
+    }
+
+    suspend fun updatePdfMetadata(
+        context: Context,
+        sourceUri: Uri,
+        metadata: PdfMetadata,
+        outputFileName: String
+    ): File = withContext(Dispatchers.IO) {
+        val localFile = getLocalFileFromUri(context, sourceUri)
+        val outputDir = File(context.filesDir, "exports").apply { mkdirs() }
+        val outputFile = File(outputDir, if (outputFileName.endsWith(".pdf")) outputFileName else "$outputFileName.pdf")
+
+        com.tom_roush.pdfbox.pdmodel.PDDocument.load(localFile).use { doc ->
+            var info = doc.documentInformation
+            if (info == null) {
+                info = com.tom_roush.pdfbox.pdmodel.PDDocumentInformation()
+            }
+            info.title = metadata.title
+            info.author = metadata.author
+            info.subject = metadata.subject
+            info.keywords = metadata.keywords
+            info.modificationDate = java.util.Calendar.getInstance()
+            doc.documentInformation = info
+            doc.save(outputFile)
+        }
+        outputFile
+    }
+
+    suspend fun rotatePdfPages(
+        context: Context,
+        sourceUri: Uri,
+        pageRotations: Map<Int, Int>,
+        outputName: String = "PDFCraft_Rotated.pdf"
+    ): File = withContext(Dispatchers.IO) {
+        val file = getLocalFileFromUri(context, sourceUri)
+        val outputDir = File(context.filesDir, "exports").apply { mkdirs() }
+        val outputFile = File(outputDir, if (outputName.endsWith(".pdf", ignoreCase = true)) outputName else "$outputName.pdf")
+
+        com.tom_roush.pdfbox.pdmodel.PDDocument.load(file).use { doc ->
+            val pageCount = doc.numberOfPages
+            for (i in 0 until pageCount) {
+                val additionalDegrees = pageRotations[i] ?: 0
+                if (additionalDegrees != 0) {
+                    val page = doc.getPage(i)
+                    val currentRotation = page.rotation
+                    val newRotation = (currentRotation + additionalDegrees) % 360
+                    page.rotation = if (newRotation < 0) newRotation + 360 else newRotation
+                }
+            }
+            doc.save(outputFile)
+        }
+        outputFile
+    }
 }
+
+enum class WatermarkType { TEXT, IMAGE }
+
+enum class WatermarkPosition {
+    CENTER,
+    TOP_LEFT,
+    TOP_RIGHT,
+    BOTTOM_LEFT,
+    BOTTOM_RIGHT,
+    TILE
+}
+
+enum class WatermarkPageRange {
+    ALL_PAGES,
+    FIRST_PAGE_ONLY,
+    EVEN_PAGES,
+    ODD_PAGES
+}
+
+data class WatermarkOptions(
+    val type: WatermarkType = WatermarkType.TEXT,
+    val text: String = "CONFIDENTIAL",
+    val textSize: Float = 36f,
+    val textColorRgb: IntArray = intArrayOf(180, 180, 180),
+    val imageUri: Uri? = null,
+    val imageScale: Float = 0.4f,
+    val opacity: Float = 0.3f,
+    val rotationAngle: Float = 45f,
+    val position: WatermarkPosition = WatermarkPosition.CENTER,
+    val pageRange: WatermarkPageRange = WatermarkPageRange.ALL_PAGES
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as WatermarkOptions
+
+        if (type != other.type) return false
+        if (text != other.text) return false
+        if (textSize != other.textSize) return false
+        if (!textColorRgb.contentEquals(other.textColorRgb)) return false
+        if (imageUri != other.imageUri) return false
+        if (imageScale != other.imageScale) return false
+        if (opacity != other.opacity) return false
+        if (rotationAngle != other.rotationAngle) return false
+        if (position != other.position) return false
+        if (pageRange != other.pageRange) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = type.hashCode()
+        result = 31 * result + text.hashCode()
+        result = 31 * result + textSize.hashCode()
+        result = 31 * result + textColorRgb.contentHashCode()
+        result = 31 * result + (imageUri?.hashCode() ?: 0)
+        result = 31 * result + imageScale.hashCode()
+        result = 31 * result + opacity.hashCode()
+        result = 31 * result + rotationAngle.hashCode()
+        result = 31 * result + position.hashCode()
+        result = 31 * result + pageRange.hashCode()
+        return result
+    }
+}
+

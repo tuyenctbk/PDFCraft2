@@ -31,6 +31,37 @@
     <string name="action_view">View</string>
     <string name="action_select_files">Select Files</string>
 
+    <!-- Tools & Features -->
+    <string name="tool_rotate_title">Rotate Pages</string>
+    <string name="tool_rotate_desc">Orient pages by 90°, 180°, or 270° degrees</string>
+    <string name="tool_merge_title">Merge PDFs</string>
+    <string name="tool_merge_desc">Combine multiple PDFs into a single file</string>
+    <string name="tool_split_title">Split PDF</string>
+    <string name="tool_split_desc">Extract pages or split document into parts</string>
+    <string name="tool_compress_title">Compress PDF</string>
+    <string name="tool_compress_desc">Reduce file size while preserving quality</string>
+    <string name="tool_encrypt_title">Encrypt PDF</string>
+    <string name="tool_encrypt_desc">Secure sensitive PDFs with robust passwords</string>
+    <string name="tool_watermark_title">Watermark PDF</string>
+    <string name="tool_watermark_desc">Stamp custom text protection on all pages</string>
+    <string name="tool_sign_title">Sign PDF</string>
+    <string name="tool_sign_desc">Add cryptographic signature blocks</string>
+    <string name="tool_metadata_title">Edit Metadata</string>
+    <string name="tool_metadata_desc">Update title, author, subject, and keywords</string>
+
+    <!-- Rotate Screen -->
+    <string name="rotate_screen_title">Rotate PDF Pages</string>
+    <string name="rotate_screen_subtitle">Orient pages by 90°, 180°, or 270°</string>
+    <string name="rotate_select_pdf_title">Select a PDF to Rotate Pages</string>
+    <string name="rotate_select_pdf_desc">Choose a document to rotate individual or all pages by 90°, 180°, or 270° degrees.</string>
+    <string name="rotate_choose_file">Choose PDF File</string>
+    <string name="rotate_selected_count">Rotate Selected Pages (%1$d/%2$d)</string>
+    <string name="rotate_select_all">Select All</string>
+    <string name="rotate_clear_selection">Clear</string>
+    <string name="rotate_reset_rotations">Reset Rotations</string>
+    <string name="rotate_output_name_label">Output PDF File Name</string>
+    <string name="rotate_save_button">Save Rotated PDF to Device</string>
+
     <!-- AdMob & Polite Ads -->
     <string name="ad_sponsor">Sponsored</string>
     <string name="ad_polite_notice">Thank you for using PDFCraft! Ads support continuous offline tool development.</string>

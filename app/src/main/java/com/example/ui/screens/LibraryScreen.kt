@@ -7,6 +7,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -27,9 +29,14 @@ import androidx.compose.material.icons.filled.Compress
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FolderSpecial
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Merge
+import androidx.compose.material.icons.filled.TextFields
+import androidx.compose.material.icons.filled.Draw
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
@@ -87,18 +94,26 @@ fun LibraryScreen(
 
     val totalSavedBytes = historyList.sumOf { (it.originalSizeBytes - it.resultSizeBytes).coerceAtLeast(0) }
 
-    Column(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Statistics Banner
-        Surface(
-            color = MaterialTheme.colorScheme.surface,
-            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-            modifier = Modifier.fillMaxWidth()
+        val isWide = maxWidth > 600.dp
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .widthIn(max = 840.dp)
+                .align(Alignment.TopCenter)
         ) {
-            Column(modifier = Modifier.padding(14.dp)) {
+            // Statistics Banner
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
                 Text(
                     text = "Project Library & Activity Log",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
@@ -277,6 +292,11 @@ fun LibraryScreen(
                                 PdfOperationType.SPLIT -> Icons.Default.ContentCut
                                 PdfOperationType.COMPRESS -> Icons.Default.Compress
                                 PdfOperationType.EXTRACT -> Icons.Default.Image
+                                PdfOperationType.ENCRYPT -> Icons.Default.Lock
+                                PdfOperationType.WATERMARK -> Icons.Default.TextFields
+                                PdfOperationType.SIGN -> Icons.Default.Draw
+                                PdfOperationType.METADATA -> Icons.Default.Edit
+                                PdfOperationType.ROTATE -> Icons.Default.Refresh
                             }
                             Box(
                                 modifier = Modifier
@@ -366,4 +386,5 @@ fun LibraryScreen(
             }
         }
     }
+}
 }

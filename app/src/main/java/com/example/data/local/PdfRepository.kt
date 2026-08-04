@@ -210,4 +210,138 @@ class PdfRepository(
         )
         return outputFile
     }
+
+    suspend fun encryptPdf(
+        context: Context,
+        sourceUri: Uri,
+        userPassword: String,
+        ownerPassword: String,
+        outputName: String,
+        originalSizeBytes: Long
+    ): File {
+        val outputFile = PdfEngine.encryptPdf(context, sourceUri, userPassword, ownerPassword, outputName)
+        saveProjectRecord(
+            PdfProjectEntity(
+                title = outputFile.name,
+                operationType = PdfOperationType.ENCRYPT,
+                pageCount = 1,
+                originalSizeBytes = originalSizeBytes,
+                resultSizeBytes = outputFile.length(),
+                outputFilePath = outputFile.absolutePath,
+                summaryDetails = "Encrypted with 128-bit AES password protection into ${outputFile.name}"
+            )
+        )
+        return outputFile
+    }
+
+    suspend fun watermarkPdf(
+        context: Context,
+        sourceUri: Uri,
+        watermarkText: String,
+        outputName: String,
+        originalSizeBytes: Long
+    ): File = watermarkPdf(
+        context = context,
+        sourceUri = sourceUri,
+        options = com.example.data.pdf.WatermarkOptions(text = watermarkText),
+        outputName = outputName,
+        originalSizeBytes = originalSizeBytes
+    )
+
+    suspend fun watermarkPdf(
+        context: Context,
+        sourceUri: Uri,
+        options: com.example.data.pdf.WatermarkOptions,
+        outputName: String,
+        originalSizeBytes: Long
+    ): File {
+        val outputFile = PdfEngine.watermarkPdf(context, sourceUri, options, outputName)
+        val details = if (options.type == com.example.data.pdf.WatermarkType.TEXT) {
+            "Text Watermark '${options.text}' applied"
+        } else {
+            "Image Watermark applied"
+        }
+        saveProjectRecord(
+            PdfProjectEntity(
+                title = outputFile.name,
+                operationType = PdfOperationType.WATERMARK,
+                pageCount = 1,
+                originalSizeBytes = originalSizeBytes,
+                resultSizeBytes = outputFile.length(),
+                outputFilePath = outputFile.absolutePath,
+                summaryDetails = "$details into ${outputFile.name}"
+            )
+        )
+        return outputFile
+    }
+
+    suspend fun signPdf(
+        context: Context,
+        sourceUri: Uri,
+        signerName: String,
+        reason: String,
+        outputName: String,
+        originalSizeBytes: Long
+    ): File {
+        val outputFile = PdfEngine.signPdf(context, sourceUri, signerName, reason, outputName)
+        saveProjectRecord(
+            PdfProjectEntity(
+                title = outputFile.name,
+                operationType = PdfOperationType.SIGN,
+                pageCount = 1,
+                originalSizeBytes = originalSizeBytes,
+                resultSizeBytes = outputFile.length(),
+                outputFilePath = outputFile.absolutePath,
+                summaryDetails = "Digitally signed by $signerName into ${outputFile.name}"
+            )
+        )
+        return outputFile
+    }
+
+    suspend fun updatePdfMetadata(
+        context: Context,
+        sourceUri: Uri,
+        metadata: com.example.data.pdf.PdfMetadata,
+        outputName: String,
+        originalSizeBytes: Long
+    ): File {
+        val outputFile = PdfEngine.updatePdfMetadata(context, sourceUri, metadata, outputName)
+        val details = "Metadata updated (Title: '${metadata.title}', Author: '${metadata.author}')"
+        saveProjectRecord(
+            PdfProjectEntity(
+                title = outputFile.name,
+                operationType = PdfOperationType.METADATA,
+                pageCount = metadata.pageCount,
+                originalSizeBytes = originalSizeBytes,
+                resultSizeBytes = outputFile.length(),
+                outputFilePath = outputFile.absolutePath,
+                summaryDetails = "$details into ${outputFile.name}"
+            )
+        )
+        return outputFile
+    }
+
+    suspend fun rotatePdfPages(
+        context: Context,
+        sourceUri: Uri,
+        pageRotations: Map<Int, Int>,
+        outputName: String,
+        originalSizeBytes: Long,
+        pageCount: Int
+    ): File {
+        val outputFile = PdfEngine.rotatePdfPages(context, sourceUri, pageRotations, outputName)
+        val rotatedCount = pageRotations.filterValues { it % 360 != 0 }.size
+        saveProjectRecord(
+            PdfProjectEntity(
+                title = outputFile.name,
+                operationType = PdfOperationType.ROTATE,
+                pageCount = pageCount,
+                originalSizeBytes = originalSizeBytes,
+                resultSizeBytes = outputFile.length(),
+                outputFilePath = outputFile.absolutePath,
+                summaryDetails = "Rotated $rotatedCount pages in ${outputFile.name}"
+            )
+        )
+        return outputFile
+    }
 }

@@ -30,7 +30,7 @@ object PdfBoxPreviewService {
         scale: Float = 1.5f
     ): Bitmap? = withContext(Dispatchers.IO) {
         try {
-            val file = PdfEngine.getLocalFileFromUri(context, pdfUri)
+            val file = PdfEngine.convertAnyFileToPdf(context, pdfUri)
             PDDocument.load(file).use { pdDocument ->
                 if (pageIndex in 0 until pdDocument.numberOfPages) {
                     val pdfRenderer = PDFRenderer(pdDocument)
@@ -51,7 +51,7 @@ object PdfBoxPreviewService {
         pdfUri: Uri
     ): PdfBoxDocumentMetadata? = withContext(Dispatchers.IO) {
         try {
-            val file = PdfEngine.getLocalFileFromUri(context, pdfUri)
+            val file = PdfEngine.convertAnyFileToPdf(context, pdfUri)
             PDDocument.load(file).use { pdDocument ->
                 val info = pdDocument.documentInformation
                 return@withContext PdfBoxDocumentMetadata(

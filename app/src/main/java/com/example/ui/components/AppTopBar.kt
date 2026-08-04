@@ -122,27 +122,7 @@ fun AppTopBar(
                     }
                 },
                 actions = {
-                    IconButton(
-                        onClick = onOpenSettingsDialog,
-                        modifier = Modifier.testTag("settings_dialog_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    IconButton(
-                        onClick = onOpenInfoDialog,
-                        modifier = Modifier.testTag("info_dialog_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = "Privacy & App Info",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                    // Top bar action buttons removed as requested
                 }
             )
         }

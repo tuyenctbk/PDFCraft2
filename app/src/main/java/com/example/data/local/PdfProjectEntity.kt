@@ -7,7 +7,12 @@ enum class PdfOperationType {
     MERGE,
     SPLIT,
     COMPRESS,
-    EXTRACT
+    EXTRACT,
+    ENCRYPT,
+    WATERMARK,
+    SIGN,
+    METADATA,
+    ROTATE
 }
 
 @Entity(tableName = "pdf_projects")

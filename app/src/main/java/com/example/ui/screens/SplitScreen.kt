@@ -13,6 +13,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -45,10 +47,12 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.filled.Visibility
 import com.example.ui.components.PdfBoxPreviewDialog
+import com.example.ui.components.PdfDocumentPreviewCard
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -85,25 +89,33 @@ fun SplitScreen(
 
     // File picker launcher
     val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         uri?.let { viewModel.loadPdfForSplit(it) }
     }
 
     var showPreview by remember { mutableStateOf(false) }
 
-    Column(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Document Selector Header
-        Surface(
-            color = MaterialTheme.colorScheme.surface,
-            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-            modifier = Modifier.fillMaxWidth()
+        val isWide = maxWidth > 600.dp
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .widthIn(max = 840.dp)
+                .align(Alignment.TopCenter)
         ) {
-            Column(modifier = Modifier.padding(14.dp)) {
+            // Document Selector Header
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -144,7 +156,7 @@ fun SplitScreen(
                         }
 
                         Button(
-                            onClick = { filePickerLauncher.launch("application/pdf") },
+                            onClick = { filePickerLauncher.launch(arrayOf("application/pdf", "image/*", "text/plain", "*/*")) },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = MaterialTheme.colorScheme.onPrimary
@@ -213,6 +225,38 @@ fun SplitScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text("Even Pages", fontSize = 11.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    var customRangeText by remember { mutableStateOf("") }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedTextField(
+                            value = customRangeText,
+                            onValueChange = { customRangeText = it },
+                            placeholder = { Text("e.g. 1-3, 5, 8-10", fontSize = 12.sp) },
+                            singleLine = true,
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(50.dp)
+                                .testTag("custom_split_range_input")
+                        )
+
+                        Button(
+                            onClick = {
+                                viewModel.selectPageRange(customRangeText)
+                            },
+                            shape = RoundedCornerShape(10.dp),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                            modifier = Modifier.height(50.dp).testTag("apply_split_range_button")
+                        ) {
+                            Text("Apply Range", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                     }
 
@@ -357,7 +401,7 @@ fun SplitScreen(
                         Spacer(modifier = Modifier.height(24.dp))
 
                         Button(
-                            onClick = { filePickerLauncher.launch("application/pdf") },
+                            onClick = { filePickerLauncher.launch(arrayOf("application/pdf", "image/*", "text/plain", "*/*")) },
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary),
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.fillMaxWidth().height(48.dp).testTag("split_empty_import_button")
@@ -370,14 +414,28 @@ fun SplitScreen(
                 }
             }
         } else {
-            // Page Selection Grid
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 130.dp),
-                contentPadding = PaddingValues(14.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                modifier = Modifier.weight(1f).fillMaxWidth()
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
             ) {
+                PdfDocumentPreviewCard(
+                    file = sourceFile,
+                    uri = sourceUri,
+                    title = "Document Live Preview",
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+                )
+
+                // Page Selection Grid
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 130.dp),
+                    contentPadding = PaddingValues(14.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
                 items(totalPages) { pageIdx ->
                     val isSelected = selectedPages.contains(pageIdx)
                     val bmp = thumbnails.getOrNull(pageIdx)
@@ -486,8 +544,10 @@ fun SplitScreen(
                     }
                 }
             }
+            }
         }
     }
+}
 
     if (showPreview && sourceUri != null) {
         PdfBoxPreviewDialog(

@@ -5,14 +5,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Compress
-import androidx.compose.material.icons.filled.ContentCut
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.FolderSpecial
 import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.outlined.Compress
-import androidx.compose.material.icons.outlined.ContentCut
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.FolderSpecial
 import androidx.compose.material.icons.outlined.GridView
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -37,10 +37,10 @@ data class NavItem(
 )
 
 val NAV_ITEMS = listOf(
-    NavItem("Merge & Edit", Icons.Filled.GridView, Icons.Outlined.GridView, "nav_merge_tab"),
-    NavItem("Splitter", Icons.Filled.ContentCut, Icons.Outlined.ContentCut, "nav_split_tab"),
-    NavItem("Compress", Icons.Filled.Compress, Icons.Outlined.Compress, "nav_compress_tab"),
-    NavItem("Library", Icons.Filled.FolderSpecial, Icons.Outlined.FolderSpecial, "nav_library_tab")
+    NavItem("Hub", Icons.Filled.GridView, Icons.Outlined.GridView, "nav_hub_tab"),
+    NavItem("Tools", Icons.Filled.Build, Icons.Outlined.Build, "nav_tools_tab"),
+    NavItem("Library", Icons.Filled.FolderSpecial, Icons.Outlined.FolderSpecial, "nav_library_tab"),
+    NavItem("Settings", Icons.Filled.Settings, Icons.Outlined.Settings, "nav_settings_tab")
 )
 
 @Composable
@@ -135,4 +135,3 @@ fun AppNavigationRail(
         }
     }
 }
-

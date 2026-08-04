@@ -3,6 +3,7 @@ package com.example
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.Crossfade
@@ -45,11 +46,20 @@ import com.example.ui.components.PdfViewerDialog
 import com.example.ui.components.PoliteAdBanner
 import com.example.ui.components.PoliteAdDialog
 import com.example.ui.components.SettingsDialog
+import com.example.data.local.PdfOperationType
 import com.example.ui.screens.CompressScreen
+import com.example.ui.screens.EncryptScreen
+import com.example.ui.screens.HubScreen
 import com.example.ui.screens.LibraryScreen
 import com.example.ui.screens.MergeScreen
+import com.example.ui.screens.MetadataScreen
 import com.example.ui.screens.OnboardingScreen
+import com.example.ui.screens.RotateScreen
+import com.example.ui.screens.SettingsScreen
+import com.example.ui.screens.SignScreen
 import com.example.ui.screens.SplitScreen
+import com.example.ui.screens.ToolsScreen
+import com.example.ui.screens.WatermarkScreen
 import com.example.ui.theme.PDFCraftTheme
 
 class MainActivity : ComponentActivity() {
@@ -119,20 +129,40 @@ fun PDFCraftApp(
 
     val isWideScreen = LocalConfiguration.current.screenWidthDp >= 600
 
+    val activeTool by viewModel.activeTool.collectAsState()
+
+    BackHandler(enabled = activeTool != null) {
+        viewModel.setActiveTool(null)
+    }
+
     @Composable
     fun MainContentArea(modifier: Modifier = Modifier) {
         Box(
             modifier = modifier.fillMaxSize()
         ) {
-            Crossfade(
-                targetState = currentTab,
-                label = "tabCrossfade"
-            ) { tab ->
-                when (tab) {
-                    0 -> MergeScreen(viewModel = viewModel)
-                    1 -> SplitScreen(viewModel = viewModel)
-                    2 -> CompressScreen(viewModel = viewModel)
-                    3 -> LibraryScreen(viewModel = viewModel)
+            if (activeTool != null) {
+                when (activeTool) {
+                    PdfOperationType.MERGE -> MergeScreen(viewModel = viewModel)
+                    PdfOperationType.SPLIT -> SplitScreen(viewModel = viewModel)
+                    PdfOperationType.COMPRESS -> CompressScreen(viewModel = viewModel)
+                    PdfOperationType.METADATA -> MetadataScreen(viewModel = viewModel)
+                    PdfOperationType.ENCRYPT -> EncryptScreen(viewModel = viewModel)
+                    PdfOperationType.WATERMARK -> WatermarkScreen(viewModel = viewModel)
+                    PdfOperationType.SIGN -> SignScreen(viewModel = viewModel)
+                    PdfOperationType.ROTATE -> RotateScreen(viewModel = viewModel, onNavigateBack = { viewModel.setActiveTool(null) })
+                    else -> {}
+                }
+            } else {
+                Crossfade(
+                    targetState = currentTab,
+                    label = "tabCrossfade"
+                ) { tab ->
+                    when (tab) {
+                        0 -> HubScreen(viewModel = viewModel)
+                        1 -> ToolsScreen(viewModel = viewModel)
+                        2 -> LibraryScreen(viewModel = viewModel)
+                        3 -> SettingsScreen(viewModel = viewModel)
+                    }
                 }
             }
         }

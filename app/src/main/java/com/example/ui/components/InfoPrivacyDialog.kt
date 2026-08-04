@@ -85,8 +85,6 @@ fun InfoPrivacyDialog(
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     FeaturePoint("100% On-Device Processing", "All PDF merges, page rotations, splitting, compression and image extractions execute locally on device CPU/GPU.")
                     FeaturePoint("Zero Cloud Uploads", "Your confidential tax forms, invoices, contracts, and personal documents never touch third-party servers.")
-                    FeaturePoint("Firebase & Remote Config Ready", "Configurations and performance parameters managed safely with user-first design.")
-                    FeaturePoint("Polite & Respectful Ads", "AdMob is disabled by default via Remote Config to prioritize clean user experience.")
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
