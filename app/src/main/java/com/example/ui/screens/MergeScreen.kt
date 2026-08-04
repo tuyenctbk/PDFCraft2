@@ -97,7 +97,6 @@ fun MergeScreen(
     val outputName by viewModel.mergeOutputName.collectAsState()
     val isProcessing by viewModel.isProcessing.collectAsState()
     val processingMessage by viewModel.processingMessage.collectAsState()
-    val samples by viewModel.samplePdfs.collectAsState()
     val selectedIds by viewModel.selectedMergePageIds.collectAsState()
 
     var previewUri by remember { mutableStateOf<Uri?>(null) }

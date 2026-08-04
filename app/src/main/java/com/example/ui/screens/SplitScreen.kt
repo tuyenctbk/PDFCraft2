@@ -81,7 +81,6 @@ fun SplitScreen(
     val thumbnails by viewModel.splitThumbnails.collectAsState()
     val isProcessing by viewModel.isProcessing.collectAsState()
     val processingMessage by viewModel.processingMessage.collectAsState()
-    val samples by viewModel.samplePdfs.collectAsState()
     val splitMode by viewModel.splitMode.collectAsState()
 
     // File picker launcher

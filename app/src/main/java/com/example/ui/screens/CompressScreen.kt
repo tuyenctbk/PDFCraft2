@@ -83,7 +83,6 @@ fun CompressScreen(
     val extractedImages by viewModel.extractedImages.collectAsState()
     val isProcessing by viewModel.isProcessing.collectAsState()
     val processingMessage by viewModel.processingMessage.collectAsState()
-    val samples by viewModel.samplePdfs.collectAsState()
 
     var activeSubTab by remember { mutableStateOf("COMPRESS") } // COMPRESS or EXTRACT
     var selectedImageFormat by remember { mutableStateOf("PNG") }

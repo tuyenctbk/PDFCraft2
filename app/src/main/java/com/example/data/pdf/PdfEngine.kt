@@ -227,7 +227,7 @@ object PdfEngine {
                             }
                         }
 
-                        if (bitmap != null) {
+                        if (bitmap != null && bitmap.width > 0 && bitmap.height > 0) {
                             // Apply rotation if requested
                             val finalBitmap = if (item.rotationDegrees % 360 != 0) {
                                 val matrix = Matrix().apply { postRotate(item.rotationDegrees.toFloat()) }
@@ -236,11 +236,13 @@ object PdfEngine {
                                 bitmap
                             }
 
-                            // Create PDF page with image dimensions
-                            val pageInfo = PdfDocument.PageInfo.Builder(finalBitmap.width, finalBitmap.height, newIndex + 1).create()
-                            val pdfPage = pdfDocument.startPage(pageInfo)
-                            pdfPage.canvas.drawBitmap(finalBitmap, 0f, 0f, null)
-                            pdfDocument.finishPage(pdfPage)
+                            if (finalBitmap.width > 0 && finalBitmap.height > 0) {
+                                // Create PDF page with image dimensions
+                                val pageInfo = PdfDocument.PageInfo.Builder(finalBitmap.width, finalBitmap.height, newIndex + 1).create()
+                                val pdfPage = pdfDocument.startPage(pageInfo)
+                                pdfPage.canvas.drawBitmap(finalBitmap, 0f, 0f, null)
+                                pdfDocument.finishPage(pdfPage)
+                            }
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, "Failed to write image item to PDF page", e)
@@ -392,7 +394,8 @@ object PdfEngine {
                 val pageInfo = PdfDocument.PageInfo.Builder(page.width, page.height, i + 1).create()
                 val pdfPage = pdfDocument.startPage(pageInfo)
                 val destRect = Rect(0, 0, page.width, page.height)
-                pdfPage.canvas.drawBitmap(compressedBitmap, null, destRect, null)
+                val bitmapToDraw = compressedBitmap ?: bitmap
+                pdfPage.canvas.drawBitmap(bitmapToDraw, null, destRect, null)
                 pdfDocument.finishPage(pdfPage)
             }
 
